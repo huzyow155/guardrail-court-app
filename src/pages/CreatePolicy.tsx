@@ -18,7 +18,7 @@ export const CreatePolicy: React.FC = () => {
     setError(null);
 
     if (!window.ethereum || !address) {
-      setError('Please connect your wallet first.');
+      setError('Please connect your wallet prior to submitting.');
       return;
     }
 

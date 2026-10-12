@@ -46,7 +46,7 @@ Guardrail Court is an advisory intelligence gate for autonomous agent actions. R
 |    | Stat: 10 Reference Runs | Latency: 19.02s mean | 100% Fail-Closed|   |
 |    +----------------------------------------------------------------+   |
 |                                                                         |
-|    [ VIEW LIVE COURT /app ]    [ EVIDENCE & AUDIT /evidence ]           |
+|    [ VIEW COURT DESK /app ]    [ EVIDENCE & AUDIT /evidence ]           |
 |                                                                         |
 +-------------------------------------------------------------------------+
 ```
