@@ -88,7 +88,7 @@ export const CourtExplorer: React.FC = () => {
             className="btn btn-sm btn-secondary"
             onClick={() => loadPolicyData(selectedPolicyId)}
           >
-            ↻ Refresh State
+            Refresh State
           </button>
         </div>
       </div>
