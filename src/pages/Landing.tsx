@@ -67,7 +67,7 @@ export const Landing: React.FC = () => {
         {/* 3-Way Signal Mechanics Card */}
         <div className="panel" style={{ marginBottom: '2rem' }}>
           <div className="panel-header">
-            <h3>Three-Way Signal Mechanics</h3>
+            <h2>Three-Way Signal Mechanics</h2>
             <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>gl.eq_principle.strict_eq</span>
           </div>
 
