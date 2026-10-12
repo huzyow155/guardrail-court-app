@@ -1,122 +1,104 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { WalletProvider, useWallet } from './context/WalletContext';
+import { Landing } from './pages/Landing';
+import { Evidence } from './pages/Evidence';
+import { CourtExplorer } from './pages/CourtExplorer';
+import { DecisionDetail } from './pages/DecisionDetail';
+import { CreatePolicy } from './pages/CreatePolicy';
 
-function App() {
-  const [count, setCount] = useState(0)
+const NavigationBar: React.FC = () => {
+  const { pathname } = useLocation();
+  const { address, isConnected, connectWallet, disconnectWallet } = useWallet();
+
+  const shortAddress = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : '';
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <header className="site-header">
+      <Link to="/" className="site-logo">
+        <span
+          style={{
+            display: 'inline-block',
+            width: '12px',
+            height: '12px',
+            backgroundColor: 'var(--ink-primary)',
+            borderRadius: '50%',
+          }}
+        />
+        Guardrail Court
+      </Link>
 
-      <div className="ticks"></div>
+      <nav className="nav-links">
+        <Link to="/app" className={`nav-link ${pathname.startsWith('/app') ? 'active' : ''}`}>
+          Court Desk
+        </Link>
+        <Link to="/evidence" className={`nav-link ${pathname === '/evidence' ? 'active' : ''}`}>
+          Evidence
+        </Link>
+        <Link to="/app/new" className={`nav-link ${pathname === '/app/new' ? 'active' : ''}`}>
+          + Policy
+        </Link>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
+        {isConnected ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span
+              className="badge font-mono"
+              style={{ background: 'var(--bg-surface)', borderColor: 'var(--ink-primary)' }}
+            >
+              {shortAddress}
+            </span>
+            <button className="btn btn-sm btn-secondary" onClick={disconnectWallet}>
+              Disconnect
+            </button>
+          </div>
+        ) : (
+          <button className="btn btn-sm btn-primary" onClick={connectWallet}>
+            Connect Wallet
+          </button>
+        )}
+      </nav>
+    </header>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <WalletProvider>
+      <BrowserRouter>
+        <div className="app-container">
+          <NavigationBar />
+          <main style={{ flex: 1 }}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/evidence" element={<Evidence />} />
+              <Route path="/app" element={<CourtExplorer />} />
+              <Route path="/app/policy/:id" element={<CourtExplorer />} />
+              <Route path="/app/decision/:id" element={<DecisionDetail />} />
+              <Route path="/app/new" element={<CreatePolicy />} />
+            </Routes>
+          </main>
+          <footer className="site-footer">
+            <div>
+              <strong>Guardrail Court</strong> • Advisory Policy Gate for Autonomous Agents
+            </div>
+            <div>
+              GenLayer Studionet (Chain ID 61999) • Contract{' '}
+              <a
+                href="https://explorer-studio.genlayer.com/address/0x6C553Ba27a768D71b570a106D9D2e13553b4103c"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: 'var(--ink-primary)' }}
+              >
+                0x6C55...103c
               </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+            </div>
+          </footer>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </BrowserRouter>
+    </WalletProvider>
+  );
+};
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+export default App;

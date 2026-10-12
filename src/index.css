@@ -1,111 +1,278 @@
+@import '@fontsource/space-grotesk/400.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/space-grotesk/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Guardrail Court Design System Tokens */
+  --bg-mint: #E3FDE6;
+  --bg-surface: #FFFFFF;
+  --bg-surface-subtle: #F2FEF4;
+  --border-mint: #B5E8BD;
+  --border-strong: #001FEB;
+  
+  --ink-primary: #001FEB;      /* Electric Railway Blue */
+  --ink-body: #08104D;         /* Deep Ink for paragraphs & text readability */
+  --ink-muted: #4A5568;
+  
+  /* Semaphore Colors */
+  --signal-allow: #00A347;
+  --signal-escalate: #FF8C00;
+  --signal-deny: #D6001C;
+  --signal-paused: #64748B;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --radius-sm: 2px;
+  --radius-md: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+* {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
+  background-color: var(--bg-mint);
+  color: var(--ink-body);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+/* Typography Helpers */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  color: var(--ink-primary);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
+/* Layout Elements */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.site-header {
+  border-bottom: 2px solid var(--ink-primary);
+  padding: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.site-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--ink-primary);
+  font-weight: 700;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--ink-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  border-color: var(--ink-primary);
+  background-color: var(--bg-surface);
+}
+
+.site-footer {
+  border-top: 2px solid var(--border-mint);
+  padding: 2rem 0;
+  margin-top: auto;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Railway Buttons */
+.btn {
   display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  border: 2px solid var(--ink-primary);
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+.btn-primary {
+  background-color: var(--ink-primary);
+  color: var(--bg-mint);
+}
+
+.btn-primary:hover {
+  background-color: #0018B8;
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  color: var(--ink-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-mint);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.btn-allow {
+  background-color: var(--signal-allow);
+  border-color: var(--signal-allow);
+  color: #FFFFFF;
+}
+
+.btn-deny {
+  background-color: var(--signal-deny);
+  border-color: var(--signal-deny);
+  color: #FFFFFF;
+}
+
+/* Railway Signal Component Styles */
+.semaphore-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.semaphore-label {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+/* Railway Panels */
+.panel {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--ink-primary);
+  padding: 1.5rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 4px 4px 0px rgba(0, 31, 235, 0.15);
+  margin-bottom: 1.5rem;
+}
+
+.panel-header {
+  border-bottom: 1px solid var(--border-mint);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Tables */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: var(--bg-mint);
+  color: var(--ink-primary);
+  border-bottom: 2px solid var(--ink-primary);
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-mint);
+}
+
+.data-table tr:hover {
+  background-color: var(--bg-surface-subtle);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid currentColor;
+}
+
+.badge-source {
+  background-color: #EBF8FF;
+  color: #2B6CB0;
+  border-color: #BEE3F8;
+}
+
+.badge-status-cleared {
+  background-color: #DEF7EC;
+  color: #03543F;
+}
+
+.badge-status-denied {
+  background-color: #FDE8E8;
+  color: #9B1C1C;
+}
+
+.badge-status-pending {
+  background-color: #FEF08A;
+  color: #713F12;
+}
+
+/* Odometer */
+.odometer-digit {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }

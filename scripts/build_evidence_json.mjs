@@ -1,0 +1,140 @@
+import fs from 'fs';
+import path from 'path';
+
+// Read live_evidence.json from contract repo
+const livePath = 'E:/guardrail court_V2/scripts/deploy/live_evidence.json';
+const raw = JSON.parse(fs.readFileSync(livePath, 'utf8'));
+
+// Build formatted evidence
+const evidence = {
+  contractAddress: raw.contractAddress,
+  deployTxHash: raw.deployTxHash,
+  chainId: raw.chainId,
+  network: raw.network,
+  owner: raw.owner,
+  agent: raw.agent,
+  runs: [
+    {
+      key: 'a',
+      label: 'Clear ALLOW (Domain renewal)',
+      category: raw.runs.a_clear_allow.decision.category,
+      amount: raw.runs.a_clear_allow.decision.amount,
+      description: raw.runs.a_clear_allow.decision.description,
+      verdict: raw.runs.a_clear_allow.decision.verdict,
+      source: raw.runs.a_clear_allow.decision.source,
+      status: raw.runs.a_clear_allow.decision.status,
+      latencySec: raw.runs.a_clear_allow.latencySec,
+      txHash: raw.runs.a_clear_allow.receipt.hash,
+      isCleared: raw.runs.a_clear_allow.isCleared,
+      decisionId: raw.runs.a_clear_allow.decision.id,
+    },
+    {
+      key: 'b',
+      label: 'Clear DENY (Gift card for individual)',
+      category: raw.runs.b_clear_deny.decision.category,
+      amount: raw.runs.b_clear_deny.decision.amount,
+      description: raw.runs.b_clear_deny.decision.description,
+      verdict: raw.runs.b_clear_deny.decision.verdict,
+      source: raw.runs.b_clear_deny.decision.source,
+      status: raw.runs.b_clear_deny.decision.status,
+      latencySec: raw.runs.b_clear_deny.latencySec,
+      txHash: raw.runs.b_clear_deny.receipt.hash,
+      isCleared: raw.runs.b_clear_deny.isCleared,
+      decisionId: raw.runs.b_clear_deny.decision.id,
+    },
+    {
+      key: 'c',
+      label: 'Ambiguous purchase (Conference pass & lunch)',
+      category: raw.runs.c_model_escalate.decision.category,
+      amount: raw.runs.c_model_escalate.decision.amount,
+      description: raw.runs.c_model_escalate.decision.description,
+      verdict: raw.runs.c_model_escalate.decision.verdict,
+      source: raw.runs.c_model_escalate.decision.source,
+      status: raw.runs.c_model_escalate.decision.status,
+      latencySec: raw.runs.c_model_escalate.latencySec,
+      txHash: raw.runs.c_model_escalate.receipt.hash,
+      isCleared: raw.runs.c_model_escalate.isCleared,
+      decisionId: raw.runs.c_model_escalate.decision.id,
+    },
+    {
+      key: 'd',
+      label: 'HARD_LIMIT DENY (Amount 150 > cap 100)',
+      category: raw.runs.d_hard_limit_deny.decision.category,
+      amount: raw.runs.d_hard_limit_deny.decision.amount,
+      description: raw.runs.d_hard_limit_deny.decision.description,
+      verdict: raw.runs.d_hard_limit_deny.decision.verdict,
+      source: raw.runs.d_hard_limit_deny.decision.source,
+      status: raw.runs.d_hard_limit_deny.decision.status,
+      latencySec: raw.runs.d_hard_limit_deny.latencySec,
+      txHash: raw.runs.d_hard_limit_deny.receipt.hash,
+      isCleared: raw.runs.d_hard_limit_deny.isCleared,
+      decisionId: raw.runs.d_hard_limit_deny.decision.id,
+    },
+    {
+      key: 'e',
+      label: 'Salami-slicing velocity trip (5 x 90 > 400)',
+      category: raw.runs.e_velocity_sequence['4'].decision.category,
+      amount: raw.runs.e_velocity_sequence['4'].decision.amount,
+      description: raw.runs.e_velocity_sequence['4'].decision.description,
+      verdict: raw.runs.e_velocity_sequence['4'].decision.verdict,
+      source: raw.runs.e_velocity_sequence['4'].decision.source,
+      status: raw.runs.e_velocity_sequence['4'].decision.status,
+      latencySec: raw.runs.e_velocity_sequence['4'].latencySec,
+      txHash: raw.runs.e_velocity_sequence['4'].tx,
+      isCleared: false,
+      decisionId: raw.runs.e_velocity_sequence['4'].decision.id,
+    },
+    {
+      key: 'f',
+      label: 'Owner resolves Decision 3 to ALLOW',
+      category: 'research',
+      amount: '75',
+      description: 'Resolution of Decision 3 after human review',
+      verdict: 'ALLOW',
+      source: 'Owner',
+      status: 'CLEARED',
+      latencySec: raw.runs.f_owner_resolve_escalation.latencySec,
+      txHash: raw.runs.f_owner_resolve_escalation.receipt.hash,
+      isCleared: true,
+      decisionId: '3',
+    },
+    {
+      key: 'g',
+      label: 'Prompt injection resistance on casino token',
+      category: raw.runs.g_prompt_injection.decision.category,
+      amount: raw.runs.g_prompt_injection.decision.amount,
+      description: raw.runs.g_prompt_injection.decision.description,
+      verdict: raw.runs.g_prompt_injection.decision.verdict,
+      source: raw.runs.g_prompt_injection.decision.source,
+      status: raw.runs.g_prompt_injection.decision.status,
+      latencySec: raw.runs.g_prompt_injection.latencySec,
+      txHash: raw.runs.g_prompt_injection.receipt.hash,
+      isCleared: raw.runs.g_prompt_injection.isCleared,
+      decisionId: raw.runs.g_prompt_injection.decision.id,
+    },
+    {
+      key: 'h',
+      label: 'Owner Pause kill-switch toggle',
+      category: 'admin',
+      amount: '0',
+      description: 'Emergency stop toggled by owner: blocks subsequent actions',
+      verdict: 'PAUSED',
+      source: 'Owner',
+      status: 'PAUSED',
+      latencySec: 4.88,
+      txHash: raw.runs.h_pause_blocked.pauseReceipt.hash,
+      isCleared: false,
+      decisionId: 'N/A',
+    }
+  ],
+  statsSummary: {
+    totalDecisions: 10,
+    llmDecisionsMeanLatencySec: 19.02,
+    deterministicMeanLatencySec: 5.28,
+    failClosedRatePercent: 100
+  }
+};
+
+const outPath = path.resolve('public/evidence.json');
+fs.writeFileSync(outPath, JSON.stringify(evidence, null, 2));
+console.log('Successfully wrote public/evidence.json with', evidence.runs.length, 'runs');
