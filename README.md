@@ -1,32 +1,53 @@
-# React + TypeScript + Vite
+# Guardrail Court dApp
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> Advisory Policy Gate & Multi-Validator Clearance Protocol for Autonomous AI Agents on GenLayer Studionet.
 
-Currently, two official plugins are available:
+## Live Deployment & Network
+- **Production URL**: [https://guardrail-court-app.vercel.app](https://guardrail-court-app.vercel.app)
+- **Network**: GenLayer Studionet (Chain ID 61999)
+- **RPC URL**: `https://studio.genlayer.com/api`
+- **Intelligent Contract**: [`0x6C553Ba27a768D71b570a106D9D2e13553b4103c`](https://explorer-studio.genlayer.com/address/0x6C553Ba27a768D71b570a106D9D2e13553b4103c)
+- **Deploy Transaction**: `0xe7a7ec9e6e1b1cf9f07696d251dc08118b7c865121551107850abb2938d81136`
+- **License**: MIT (c) 2026 Hyper
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Overview
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Guardrail Court acts as an independent advisory gate between autonomous AI agents and downstream executors (Safe modules, paymasters, execution wrappers). Human operators define natural-language policy boundaries alongside deterministic spending caps. 
 
-## Expanding the Oxlint configuration
+GenLayer validators reach equivalence consensus on an explicit three-way enum:
+- `ALLOW`: Permitted action clearing downstream verification.
+- `ESCALATE`: Subjective ambiguity, unparseable outputs, or velocity trips routed to the owner inbox.
+- `DENY`: Hard boundary violation.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+---
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Architecture & Verification
+
+1. **Pre-LLM Deterministic Guards**:
+   - `HARD_LIMIT`: Immediate rejection if `amount > max_amount` (~5.26s).
+   - `VELOCITY`: Sum of recent cleared actions within the same category exceeding `window_cap` triggers fail-closed `ESCALATE` (~5.30s).
+2. **Multi-Validator Equivalence Consensus (`JUDGE`)**:
+   - Evaluates qualitative intent against natural-language policy guidelines using `gl.eq_principle.strict_eq`.
+   - Measured average latency: 19.02s across n=8 verified transactions on Studionet.
+3. **Synchronous Cross-Contract Query**:
+   - Downstream executors verify clearances with `court.view().is_cleared(decision_id)`.
+
+---
+
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Run Vitest test suite
+npm test
+
+# Build for production
+npm run build
 ```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
