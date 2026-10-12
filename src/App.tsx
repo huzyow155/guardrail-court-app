@@ -6,6 +6,7 @@ import { Evidence } from './pages/Evidence';
 import { CourtExplorer } from './pages/CourtExplorer';
 import { DecisionDetail } from './pages/DecisionDetail';
 import { CreatePolicy } from './pages/CreatePolicy';
+import { Desk } from './pages/Desk';
 
 const NavigationBar: React.FC = () => {
   const { pathname } = useLocation();
@@ -31,8 +32,11 @@ const NavigationBar: React.FC = () => {
       </Link>
 
       <nav className="nav-links">
-        <Link to="/app" className={`nav-link ${pathname.startsWith('/app') ? 'active' : ''}`}>
-          Court Desk
+        <Link to="/app" className={`nav-link ${pathname === '/app' ? 'active' : ''}`}>
+          Explorer
+        </Link>
+        <Link to="/app/desk" className={`nav-link ${pathname === '/app/desk' ? 'active' : ''}`}>
+          Escalation Desk
         </Link>
         <Link to="/evidence" className={`nav-link ${pathname === '/evidence' ? 'active' : ''}`}>
           Evidence
@@ -74,6 +78,7 @@ export const App: React.FC = () => {
               <Route path="/" element={<Landing />} />
               <Route path="/evidence" element={<Evidence />} />
               <Route path="/app" element={<CourtExplorer />} />
+              <Route path="/app/desk" element={<Desk />} />
               <Route path="/app/policy/:id" element={<CourtExplorer />} />
               <Route path="/app/decision/:id" element={<DecisionDetail />} />
               <Route path="/app/new" element={<CreatePolicy />} />

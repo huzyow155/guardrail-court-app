@@ -31,3 +31,5 @@ throwaway_key*
 *.sln
 *.sw?
 .vercel
+
+.vercel
