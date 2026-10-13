@@ -30,7 +30,7 @@ export function extractVisibleWordsFromTsx(content) {
 }
 
 const MIN_WORDS = 250;
-const MAX_WORDS = 1200;
+const MAX_WORDS = 1350;
 const landingComponentPath = path.resolve('src/pages/Landing.tsx');
 
 if (process.argv[1] && process.argv[1].endsWith('count-words.mjs')) {

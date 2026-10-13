@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
 # Environment & Secrets (Crucial: Never commit keys)
 .env
 .env.*
@@ -31,5 +37,4 @@ throwaway_key*
 *.sln
 *.sw?
 .vercel
-
-.vercel
+.chrome-headless-profile/

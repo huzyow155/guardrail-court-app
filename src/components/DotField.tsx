@@ -16,10 +16,10 @@ interface DotFieldProps {
 }
 
 const VERDICT_RGB: Record<RippleVerdict, string> = {
-  NEUTRAL: '82, 90, 78',   // --dot (#525A4E muted graphite / desaturated green-grey)
-  ALLOW:   '40, 94, 55',   // --allow (#285E37 forest green)
-  ESCALATE:'138, 75, 29',  // --escalate (#8A4B1D oxidized copper-amber)
-  DENY:    '148, 48, 43',  // --deny (#94302B architectural brick red)
+  NEUTRAL: '59, 111, 182',  // --dot (#3B6FB6 crisp cobalt-sky blue)
+  ALLOW:   '15, 110, 75',   // --allow (#0F6E4B emerald-teal)
+  ESCALATE:'150, 79, 6',    // --escalate (#964F06 amber-gold)
+  DENY:    '176, 42, 55',   // --deny (#B02A37 crimson-rose)
 };
 
 export const DotField: React.FC<DotFieldProps> = ({
@@ -91,7 +91,7 @@ export const DotField: React.FC<DotFieldProps> = ({
         parallaxFactor: DEFAULT_PARALLAX_FACTOR,
         baseGap: currentGap,
         maxDots: currentMaxDots,
-        baseRadius: 1.9,
+        baseRadius: 1.75,
         ripples,
         reducedMotion: prefersReducedMotion,
       });
