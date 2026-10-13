@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import createPolicyReceipt from '../../tests/fixtures/create_policy_receipt.json';
-import requestActionReceipt from '../../tests/fixtures/request_action_receipt.json';
+import createPolicyReceipt from '../data/fixtures/create_policy_receipt.json';
+import requestActionReceipt from '../data/fixtures/request_action_receipt.json';
 
 describe('Receipt Fixtures & Consensus Validation', () => {
   it('validates create_policy receipt on Studionet', () => {

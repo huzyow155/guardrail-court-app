@@ -91,11 +91,11 @@ async function main() {
   console.log('Evaluated Decision:', dec);
 
   // 5. Save receipt fixtures for tests
-  const fixturesDir = path.join(__dirname, '../tests/fixtures');
+  const fixturesDir = path.join(__dirname, '../src/data/fixtures');
   fs.mkdirSync(fixturesDir, { recursive: true });
   fs.writeFileSync(path.join(fixturesDir, 'create_policy_receipt.json'), JSON.stringify(createReceipt, null, 2));
   fs.writeFileSync(path.join(fixturesDir, 'request_action_receipt.json'), JSON.stringify(reqReceipt, null, 2));
-  console.log('\nSaved receipt fixtures to tests/fixtures/');
+  console.log('\nSaved receipt fixtures to src/data/fixtures/');
 
   return {
     account: account.address,
