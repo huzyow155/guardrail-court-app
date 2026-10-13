@@ -1,113 +1,243 @@
 import React, { useEffect, useRef } from 'react';
-
-/**
- * 4x4 Bayer Matrix for ordered dithering
- */
-const BAYER_4X4 = [
-  [0, 8, 2, 10],
-  [12, 4, 14, 6],
-  [3, 11, 1, 9],
-  [15, 7, 13, 5]
-];
+import {
+  computeDotFieldFrame,
+  shouldStepDownDensity,
+  DEFAULT_MAX_DOTS,
+  DEFAULT_PARALLAX_FACTOR,
+  type DotRipple,
+  type RippleVerdict,
+} from '../lib/dotfield';
 
 interface DotFieldProps {
   className?: string;
-  dotColor?: string;
-  dotSize?: number;
-  gap?: number;
+  seed?: number;
+  baseGap?: number;
+  maxDots?: number;
 }
+
+const VERDICT_RGB: Record<RippleVerdict, string> = {
+  NEUTRAL: '58, 77, 174',  // --dot (#3A4DAE)
+  ALLOW:   '40, 110, 69',  // --allow (#286E45)
+  ESCALATE:'140, 83, 10',  // --escalate (#8C530A)
+  DENY:    '166, 58, 58',  // --deny (#A63A3A)
+};
 
 export const DotField: React.FC<DotFieldProps> = ({
   className = '',
-  dotColor = '#001FEB',
-  dotSize = 2,
-  gap = 14
+  seed = 61999,
+  baseGap = 24,
+  maxDots = DEFAULT_MAX_DOTS,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    let ctx: CanvasRenderingContext2D | null = null;
+    try {
+      ctx = canvas.getContext('2d');
+    } catch {
+      ctx = null;
+    }
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let width = 0;
-    let height = 0;
-    let time = 0;
+    let animationFrameId = 0;
+    let width = window.innerWidth || 1280;
+    let height = window.innerHeight || 800;
+    let currentGap = baseGap;
+    let currentMaxDots = maxDots;
+    let scrollY = window.scrollY || 0;
+    let isTabHidden = typeof document !== 'undefined' ? document.hidden : false;
+    let lastPointerRippleMs = 0;
 
-    // Check reduced motion
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ripples: DotRipple[] = [];
+    const frameDurations: number[] = [];
 
-    const resize = () => {
-      width = canvas.parentElement?.clientWidth || window.innerWidth;
-      height = canvas.parentElement?.clientHeight || 400;
-      canvas.width = width;
-      canvas.height = height;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let prefersReducedMotion = mediaQuery.matches;
+
+    const updateCanvasSize = () => {
+      width = window.innerWidth || 1280;
+      height = window.innerHeight || 800;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
       if (prefersReducedMotion) {
-        draw(0);
+        renderFrame(0);
       }
     };
 
-    window.addEventListener('resize', resize);
-    resize();
-
-    function draw(t: number) {
+    const renderFrame = (timeMs: number) => {
       if (!ctx) return;
+      const frameStart = performance.now();
+
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = dotColor;
 
-      const cols = Math.floor(width / gap);
-      const rows = Math.floor(height / gap);
-
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const x = c * gap + gap / 2;
-          const y = r * gap + gap / 2;
-
-          // Procedural wave / terrain height function
-          const wave1 = Math.sin(c * 0.12 + t * 0.001);
-          const wave2 = Math.cos(r * 0.14 + t * 0.0015);
-          const heightVal = ((wave1 + wave2 + 2) / 4) * 16; // 0 to 16
-
-          // Compare against Bayer matrix threshold
-          const threshold = BAYER_4X4[r % 4][c % 4];
-
-          if (heightVal > threshold) {
-            ctx.beginPath();
-            ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-            ctx.fill();
-          }
+      // Prune expired ripples
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const dur = ripples[i].durationMs ?? 1200;
+        if (timeMs - ripples[i].startTimeMs > dur) {
+          ripples.splice(i, 1);
         }
       }
-    }
 
-    const animate = (currentTime: number) => {
-      time = currentTime;
-      draw(time);
-      if (!prefersReducedMotion) {
-        animationFrameId = requestAnimationFrame(animate);
+      const dots = computeDotFieldFrame({
+        seed,
+        width,
+        height,
+        timeMs,
+        scrollY,
+        parallaxFactor: DEFAULT_PARALLAX_FACTOR,
+        baseGap: currentGap,
+        maxDots: currentMaxDots,
+        baseRadius: 1.85,
+        ripples,
+        reducedMotion: prefersReducedMotion,
+      });
+
+      for (let i = 0; i < dots.length; i++) {
+        const d = dots[i];
+        const rgb = VERDICT_RGB[d.verdict] || VERDICT_RGB.NEUTRAL;
+        // Verdict-tinted ripples use slightly lower max alpha so text above remains crisp
+        const effectiveAlpha = d.verdict === 'NEUTRAL' ? d.alpha : Math.min(0.42, d.alpha);
+        ctx.fillStyle = `rgba(${rgb}, ${effectiveAlpha})`;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const frameElapsed = performance.now() - frameStart;
+      frameDurations.push(frameElapsed);
+      if (frameDurations.length > 6) {
+        frameDurations.shift();
+      }
+      if (shouldStepDownDensity(frameDurations, 20, 3) && currentGap < 44) {
+        currentGap += 4;
+        currentMaxDots = Math.max(400, Math.floor(currentMaxDots * 0.8));
+        frameDurations.length = 0;
       }
     };
 
-    if (!prefersReducedMotion) {
-      animationFrameId = requestAnimationFrame(animate);
-    } else {
-      draw(0);
+    const loop = (now: number) => {
+      if (!prefersReducedMotion && !isTabHidden) {
+        renderFrame(now);
+        animationFrameId = requestAnimationFrame(loop);
+      }
+    };
+
+    const handleScroll = () => {
+      scrollY = window.scrollY || 0;
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (prefersReducedMotion) return;
+      const now = performance.now();
+      if (now - lastPointerRippleMs < 140) return;
+      lastPointerRippleMs = now;
+      ripples.push({
+        x: e.clientX,
+        y: e.clientY,
+        startTimeMs: now,
+        durationMs: 950,
+        maxRadius: 240,
+        verdict: 'NEUTRAL',
+      });
+      if (ripples.length > 10) ripples.shift();
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (prefersReducedMotion) return;
+      const now = performance.now();
+      ripples.push({
+        x: e.clientX,
+        y: e.clientY,
+        startTimeMs: now,
+        durationMs: 1250,
+        maxRadius: Math.hypot(width, height) * 0.55,
+        verdict: 'NEUTRAL',
+      });
+      if (ripples.length > 10) ripples.shift();
+    };
+
+    const handleCustomRipple = (ev: Event) => {
+      if (prefersReducedMotion) return;
+      const custom = ev as CustomEvent<{
+        x?: number;
+        y?: number;
+        verdict?: RippleVerdict;
+        maxRadius?: number;
+        durationMs?: number;
+      }>;
+      const now = performance.now();
+      ripples.push({
+        x: custom.detail?.x ?? width / 2,
+        y: custom.detail?.y ?? height / 2,
+        startTimeMs: now,
+        durationMs: custom.detail?.durationMs ?? 1400,
+        maxRadius: custom.detail?.maxRadius ?? Math.hypot(width, height) * 0.85,
+        verdict: custom.detail?.verdict ?? 'NEUTRAL',
+      });
+      if (ripples.length > 10) ripples.shift();
+    };
+
+    const handleVisibilityChange = () => {
+      isTabHidden = document.hidden;
+      if (isTabHidden) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = 0;
+        }
+      } else if (!prefersReducedMotion && !animationFrameId) {
+        animationFrameId = requestAnimationFrame(loop);
+      }
+    };
+
+    const handleMotionChange = (ev: MediaQueryListEvent) => {
+      prefersReducedMotion = ev.matches;
+      if (prefersReducedMotion) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = 0;
+        }
+        renderFrame(0);
+      } else if (!isTabHidden && !animationFrameId) {
+        animationFrameId = requestAnimationFrame(loop);
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true });
+    window.addEventListener('guardrail:ripple', handleCustomRipple);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    mediaQuery.addEventListener?.('change', handleMotionChange);
+
+    if (prefersReducedMotion) {
+      renderFrame(0);
+    } else if (!isTabHidden) {
+      animationFrameId = requestAnimationFrame(loop);
     }
 
     return () => {
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', updateCanvasSize);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('guardrail:ripple', handleCustomRipple);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      mediaQuery.removeEventListener?.('change', handleMotionChange);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [dotColor, dotSize, gap]);
+  }, [seed, baseGap, maxDots]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={`dot-field-canvas ${className}`}
+      className={`global-dotfield-canvas dot-field-canvas ${className}`.trim()}
       aria-hidden="true"
-      style={{ display: 'block', width: '100%', height: '100%' }}
     />
   );
 };

@@ -8,6 +8,8 @@ import {
   type PolicyRecord,
 } from '../services/contractClient';
 import { SemaphoreSignal } from '../components/SemaphoreSignal';
+import { SectionHeading, ScrambleText, RealTxTimer } from '../hooks/useReveal';
+import { triggerDotFieldRipple } from '../lib/dotfield';
 import { useWallet } from '../context/WalletContext';
 
 export const Desk: React.FC = () => {
@@ -17,11 +19,13 @@ export const Desk: React.FC = () => {
   const [pending, setPending] = useState<DecisionRecord[]>([]);
   const [recent, setRecent] = useState<DecisionRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const fetchDeskData = async (pid: string) => {
     setLoading(true);
+    setError(null);
     try {
       const [p, pnd, rec] = await Promise.all([
         getPolicy(pid),
@@ -33,6 +37,7 @@ export const Desk: React.FC = () => {
       setRecent(rec);
     } catch (err: any) {
       console.error('Error fetching desk data:', err);
+      setError(err?.message || 'Error loading escalation queue');
     } finally {
       setLoading(false);
     }
@@ -42,15 +47,19 @@ export const Desk: React.FC = () => {
     fetchDeskData(policyId);
   }, [policyId]);
 
-  const handleResolve = async (decisionId: string, outcome: 'ALLOW' | 'DENY') => {
+  const handleResolve = async (
+    decisionId: string,
+    outcome: 'ALLOW' | 'DENY',
+    buttonEl?: HTMLElement | null
+  ) => {
+    triggerDotFieldRipple({ element: buttonEl, verdict: outcome });
     if (!isConnected || !address) {
-      alert('Please connect the policy owner wallet to resolve.');
+      setNotice('Please connect the policy owner wallet to resolve.');
       return;
     }
     setResolvingId(decisionId);
     setNotice(`Submitting resolve_escalation(${decisionId}, ${outcome}) to Studionet...`);
     try {
-      // Simulation / wallet dispatch feedback
       setTimeout(() => {
         setNotice(`Resolution intent submitted: ${outcome}. Waiting for block confirmation.`);
         setResolvingId(null);
@@ -61,30 +70,40 @@ export const Desk: React.FC = () => {
     }
   };
 
-
-
   return (
     <div className="court-desk" style={{ padding: '2rem 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          gap: '1rem',
+        }}
+      >
         <div>
-          <h2>Court Escalation Desk</h2>
-          <p style={{ color: 'var(--ink-body)', marginTop: '0.2rem' }}>
-            Action triage center for human policy owners. Review and resolve ambiguous or velocity-tripped agent requests.
+          <SectionHeading text="Court Escalation Desk" as="h1" />
+          <p style={{ color: 'var(--ink-muted)' }}>
+            Owner triage queue for ambiguous or velocity-tripped agent requests.
           </p>
           {policy && (
             <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
-              Policy #{policy.id} Owner: <span className="font-mono">{policy.owner}</span>
+              Policy #{policy.id} Owner: <ScrambleText value={policy.owner} />
             </div>
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>SELECT POLICY:</span>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>POLICY:</span>
           {['1', '2', '3', '4'].map((pid) => (
             <button
               key={pid}
               className={`btn btn-sm ${policyId === pid ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setPolicyId(pid)}
+              onClick={(e) => {
+                setPolicyId(pid);
+                triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' });
+              }}
             >
               #{pid}
             </button>
@@ -93,8 +112,21 @@ export const Desk: React.FC = () => {
       </div>
 
       {notice && (
-        <div className="panel" style={{ background: 'var(--bg-surface-subtle)', borderColor: 'var(--ink-primary)', padding: '0.75rem 1rem' }}>
-          <strong>Notice:</strong> {notice}
+        <div
+          className="panel"
+          style={{
+            background: 'var(--bg)',
+            borderColor: 'var(--ink)',
+            padding: '0.75rem 1rem',
+          }}
+        >
+          <strong>Notice:</strong> {notice} <RealTxTimer active={Boolean(resolvingId)} />
+        </div>
+      )}
+
+      {error && (
+        <div className="panel" style={{ borderColor: 'var(--deny)' }}>
+          <p style={{ color: 'var(--deny)', fontWeight: 600 }}>{error}</p>
         </div>
       )}
 
@@ -107,13 +139,13 @@ export const Desk: React.FC = () => {
           {/* Pending Review Queue */}
           <div className="panel" style={{ marginBottom: '2rem' }}>
             <div className="panel-header">
-              <h3>Pending Owner Review Queue ({pending.length})</h3>
+              <h2 style={{ fontSize: '1.15rem' }}>Pending Owner Review ({pending.length})</h2>
               <span className="badge badge-status-pending">Awaiting Action</span>
             </div>
 
             {pending.length === 0 ? (
               <p style={{ color: 'var(--ink-muted)' }}>
-                Clean inbox: Zero escalations currently pending review under Policy #{policyId}.
+                Zero escalations currently pending review under Policy #{policyId}.
               </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -121,43 +153,58 @@ export const Desk: React.FC = () => {
                   <div
                     key={item.id}
                     style={{
-                      border: '2px solid var(--border-mint)',
+                      border: '2px solid var(--bg-deep)',
                       padding: '1.25rem',
                       borderRadius: 'var(--radius-sm)',
-                      background: 'var(--bg-surface)',
+                      background: 'var(--surface)',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        flexWrap: 'wrap',
+                        gap: '0.5rem',
+                      }}
+                    >
                       <div>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-                          Decision #{item.id} • Category: <span className="font-mono">{item.category}</span>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 700 }}>
+                          Decision #{item.id} • <span className="font-mono">{item.category}</span>
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.2rem' }}>
-                          Requested Amount: <span className="font-mono" style={{ fontWeight: 700 }}>{item.amount}</span> • Triggered by: <span className="badge badge-source">{item.source}</span>
+                          Amount: <span className="font-mono" style={{ fontWeight: 700 }}>{item.amount}</span> • Source: <span className="badge badge-source">{item.source}</span>
                         </div>
                       </div>
                       <SemaphoreSignal verdict={item.verdict} size="md" />
                     </div>
 
-                    <div style={{ margin: '1rem 0', padding: '0.75rem', background: 'var(--bg-surface-subtle)', borderLeft: '3px solid var(--signal-escalate)' }}>
+                    <div
+                      style={{
+                        margin: '1rem 0',
+                        padding: '0.75rem',
+                        background: 'var(--bg)',
+                        borderLeft: '3px solid var(--escalate)',
+                      }}
+                    >
                       <strong>Proposed Action:</strong>
                       <p style={{ marginTop: '0.25rem', fontSize: '0.95rem' }}>"{item.description}"</p>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                       {isConnected ? (
                         <>
                           <button
                             disabled={resolvingId === item.id}
                             className="btn btn-sm btn-allow"
-                            onClick={() => handleResolve(item.id, 'ALLOW')}
+                            onClick={(e) => handleResolve(item.id, 'ALLOW', e.currentTarget)}
                           >
                             Resolve: ALLOW
                           </button>
                           <button
                             disabled={resolvingId === item.id}
                             className="btn btn-sm btn-deny"
-                            onClick={() => handleResolve(item.id, 'DENY')}
+                            onClick={(e) => handleResolve(item.id, 'DENY', e.currentTarget)}
                           >
                             Resolve: DENY
                           </button>
@@ -179,45 +226,63 @@ export const Desk: React.FC = () => {
 
           {/* Historical Review Stream */}
           <div className="panel" style={{ padding: 0 }}>
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-mint)' }}>
+            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--bg-deep)' }}>
               <h3>Recent Evaluation Stream (Policy #{policyId})</h3>
             </div>
-            <div className="table-responsive">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Category</th>
-                    <th>Amount</th>
-                    <th>Source</th>
-                    <th>Verdict</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recent.map((d) => (
-                    <tr key={d.id}>
-                      <td className="font-mono">#{d.id}</td>
-                      <td className="font-mono">{d.category}</td>
-                      <td className="font-mono">{d.amount}</td>
-                      <td><span className="badge badge-source">{d.source}</span></td>
-                      <td><SemaphoreSignal verdict={d.verdict} size="sm" /></td>
-                      <td>
-                        <span className={`badge ${d.status === 'CLEARED' ? 'badge-status-cleared' : d.status === 'DENIED' ? 'badge-status-denied' : 'badge-status-pending'}`}>
-                          {d.status}
-                        </span>
-                      </td>
-                      <td>
-                        <Link to={`/app/decision/${d.id}`} className="btn btn-sm btn-secondary">
-                          View
-                        </Link>
-                      </td>
+            {recent.length === 0 ? (
+              <div style={{ padding: '1.5rem', color: 'var(--ink-muted)' }}>
+                No evaluation history found for Policy #{policyId}.
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Category</th>
+                      <th>Amount</th>
+                      <th>Source</th>
+                      <th>Verdict</th>
+                      <th>Status</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {recent.map((d) => (
+                      <tr key={d.id}>
+                        <td className="font-mono">#{d.id}</td>
+                        <td className="font-mono">{d.category}</td>
+                        <td className="font-mono">{d.amount}</td>
+                        <td>
+                          <span className="badge badge-source">{d.source}</span>
+                        </td>
+                        <td>
+                          <SemaphoreSignal verdict={d.verdict} size="sm" />
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              d.status === 'CLEARED'
+                                ? 'badge-status-cleared'
+                                : d.status === 'DENIED'
+                                ? 'badge-status-denied'
+                                : 'badge-status-pending'
+                            }`}
+                          >
+                            {d.status}
+                          </span>
+                        </td>
+                        <td>
+                          <Link to={`/app/decision/${d.id}`} className="btn btn-sm btn-secondary">
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </>
       )}

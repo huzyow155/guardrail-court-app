@@ -1,146 +1,214 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { DotField } from '../components/DotField';
+import evidenceData from '../../public/evidence.json';
 import { SemaphoreSignal } from '../components/SemaphoreSignal';
 import { Odometer } from '../components/Odometer';
+import { WordMaskHeading, SectionHeading, ScrambleText } from '../hooks/useReveal';
+import { triggerDotFieldRipple } from '../lib/dotfield';
 
 export const Landing: React.FC = () => {
-  return (
-    <div className="landing-page" style={{ position: 'relative', overflow: 'hidden' }}>
-      {/* Background Canvas */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '420px',
-          opacity: 0.18,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      >
-        <DotField />
-      </div>
+  const { statsSummary, contractAddress, chainId } = evidenceData;
 
-      <div style={{ position: 'relative', zIndex: 1, padding: '3rem 0 2rem 0' }}>
-        {/* Hero Section */}
-        <div style={{ maxWidth: '800px', marginBottom: '2.5rem' }}>
+  return (
+    <div className="landing-page">
+      {/* 1. HERO SECTION */}
+      <section id="hero" className="landing-section">
+        <div className="panel" style={{ maxWidth: '820px', padding: '2.5rem' }}>
           <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: '#FFFFFF',
-              border: '1px solid #001FEB',
-              padding: '0.2rem 0.6rem',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              fontFamily: 'var(--font-mono)',
-              marginBottom: '1rem',
-            }}
+            className="badge font-mono"
+            style={{ marginBottom: '1.25rem', color: 'var(--accent)', borderColor: 'var(--accent)' }}
           >
-            <span>STUDIONET: CHAIN ID 61999</span>
-            <span>•</span>
-            <span>ADVISORY INTELLIGENCE GATE</span>
+            STUDIONET CHAIN ID {chainId} • ADVISORY POLICY GATE
           </div>
 
-          <h1 style={{ fontSize: '2.5rem', lineHeight: 1.15, marginBottom: '1rem' }}>
-            Guardrail Court
-          </h1>
+          <WordMaskHeading
+            text="Guardrail Court"
+            stepMs={50}
+            style={{ fontSize: 'clamp(2.4rem, 5vw, 3.6rem)', lineHeight: 1.08, marginBottom: '1.25rem' }}
+          />
 
-          <p style={{ fontSize: '1.2rem', color: 'var(--ink-body)', marginBottom: '1.5rem', lineHeight: 1.4 }}>
-            An on-chain policy gate and multi-validator clearance protocol for autonomous AI agents.
-            Human owners specify plain-language boundaries; GenLayer validators evaluate proposed actions.
+          <p style={{ fontSize: '1.15rem', color: 'var(--ink)', marginBottom: '1.75rem', maxWidth: '64ch' }}>
+            Deterministic spending guards and multi-validator consensus evaluate autonomous AI agent actions against plain-language owner policies before execution.
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link to="/app" className="btn btn-primary">
-              Enter Court Desk
+            <Link
+              to="/app"
+              className="btn btn-primary"
+              onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'ALLOW' })}
+            >
+              Open app
             </Link>
-            <Link to="/evidence" className="btn btn-secondary">
-              View Verified Evidence
+            <Link
+              to="/evidence"
+              className="btn btn-secondary"
+              onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' })}
+            >
+              Read evidence
             </Link>
           </div>
         </div>
+      </section>
 
-        {/* 3-Way Signal Mechanics Card */}
-        <div className="panel" style={{ marginBottom: '2rem' }}>
-          <div className="panel-header">
-            <h2>Three-Way Signal Mechanics</h2>
-            <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>gl.eq_principle.strict_eq</span>
-          </div>
+      {/* 2. THREE PROTECTION LAYERS: HARD_LIMIT -> VELOCITY -> JUDGE */}
+      <section id="guards" className="landing-section">
+        <SectionHeading text="Three Protection Layers" rippleVerdict="ALLOW" />
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
-            <div style={{ borderLeft: '3px solid var(--signal-allow)', paddingLeft: '1rem' }}>
-              <SemaphoreSignal verdict="ALLOW" size="md" />
-              <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>
-                Action complies with natural-language policy and passes all numeric spending limits.
-              </p>
-            </div>
-
-            <div style={{ borderLeft: '3px solid var(--signal-escalate)', paddingLeft: '1rem' }}>
-              <SemaphoreSignal verdict="ESCALATE" size="md" />
-              <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>
-                Ambiguous requests, velocity threshold trips, or unparseable outputs route to the human owner inbox.
-              </p>
-            </div>
-
-            <div style={{ borderLeft: '3px solid var(--signal-deny)', paddingLeft: '1rem' }}>
-              <SemaphoreSignal verdict="DENY" size="md" />
-              <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>
-                Clear violations of policy guidelines or hard spending limits are definitively rejected.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Verified Stats Row */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem',
-            marginBottom: '2rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '1.5rem',
           }}
         >
-          <div className="panel" style={{ padding: '1rem', margin: 0, textAlign: 'center' }}>
-            <div style={{ fontSize: '1.8rem', color: 'var(--ink-primary)' }}>
-              <Odometer value={10} duration={600} />
+          <div className="panel" style={{ margin: 0, borderTop: '4px solid var(--deny)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span className="badge font-mono">1. HARD_LIMIT</span>
+              <SemaphoreSignal verdict="DENY" size="sm" />
             </div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>
-              Reference Runs
+            <p style={{ fontSize: '0.95rem', color: 'var(--ink)' }}>
+              Deterministic pre-check rejects any action where amount exceeds policy max_amount without calling validator models.
+            </p>
+          </div>
+
+          <div className="panel" style={{ margin: 0, borderTop: '4px solid var(--escalate)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span className="badge font-mono">2. VELOCITY</span>
+              <SemaphoreSignal verdict="ESCALATE" size="sm" />
+            </div>
+            <p style={{ fontSize: '0.95rem', color: 'var(--ink)' }}>
+              Reads the 15 newest policy decisions, filters by category, takes up to 10, and escalates when cleared sum plus amount exceeds window_cap.
+            </p>
+          </div>
+
+          <div className="panel" style={{ margin: 0, borderTop: '4px solid var(--allow)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span className="badge font-mono">3. JUDGE</span>
+              <SemaphoreSignal verdict="ALLOW" size="sm" />
+            </div>
+            <p style={{ fontSize: '0.95rem', color: 'var(--ink)' }}>
+              Multi-validator LLM evaluation under gl.eq_principle.strict_eq returns ALLOW, DENY, or ESCALATE to the owner inbox.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. MEASURED ON-CHAIN METRICS */}
+      <section id="metrics" className="landing-section">
+        <SectionHeading text="Measured On-Chain Latency" rippleVerdict="NEUTRAL" />
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <div className="panel" style={{ margin: 0 }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>
+              JUDGE Consensus (n={statsSummary.llmDecisionsCount})
+            </div>
+            <div style={{ fontSize: '2.2rem', color: 'var(--ink)', margin: '0.35rem 0' }}>
+              <Odometer value={statsSummary.llmDecisionsMeanLatencySec} duration={750} suffix="s" />
+            </div>
+            <div className="font-mono" style={{ fontSize: '0.84rem', color: 'var(--ink-muted)' }}>
+              Range: {statsSummary.llmDecisionsMinLatencySec.toFixed(1)}–{statsSummary.llmDecisionsMaxLatencySec.toFixed(1)} s mean
             </div>
           </div>
 
-          <div className="panel" style={{ padding: '1rem', margin: 0, textAlign: 'center' }}>
-            <div style={{ fontSize: '1.8rem', color: 'var(--ink-primary)' }}>
-              <Odometer value={19.02} duration={800} suffix="s" />
+          <div className="panel" style={{ margin: 0 }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>
+              Deterministic Guards (n=2)
             </div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>
-              Consensus Latency
+            <div style={{ fontSize: '2.2rem', color: 'var(--ink)', margin: '0.35rem 0' }}>
+              <Odometer value={statsSummary.deterministicGuardSummarySec} duration={650} suffix="s" />
             </div>
-          </div>
-
-          <div className="panel" style={{ padding: '1rem', margin: 0, textAlign: 'center' }}>
-            <div style={{ fontSize: '1.8rem', color: 'var(--ink-primary)' }}>
-              <Odometer value={5.28} duration={600} suffix="s" />
-            </div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>
-              Pre-LLM Numeric Guards
+            <div className="font-mono" style={{ fontSize: '0.84rem', color: 'var(--ink-muted)' }}>
+              HARD_LIMIT 5.26s • VELOCITY 5.31s
             </div>
           </div>
 
-          <div className="panel" style={{ padding: '1rem', margin: 0, textAlign: 'center' }}>
-            <div style={{ fontSize: '1.8rem', color: 'var(--ink-primary)' }}>
-              <Odometer value={100} duration={600} suffix="%" />
+          <div className="panel" style={{ margin: 0 }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>
+              Reference Decisions
             </div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>
-              Fail-Closed Posture
+            <div style={{ fontSize: '2.2rem', color: 'var(--ink)', margin: '0.35rem 0' }}>
+              <Odometer value={statsSummary.totalDecisions} duration={600} />
+            </div>
+            <div style={{ marginTop: '0.35rem' }}>
+              <Link to="/evidence" className="btn btn-sm btn-secondary">
+                Inspect /evidence →
+              </Link>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* 4. HONEST LIMITATIONS */}
+      <section id="limits" className="landing-section">
+        <SectionHeading text="Known Contract Boundaries" rippleVerdict="ESCALATE" />
+
+        <div className="panel" style={{ margin: 0 }}>
+          <ul style={{ listStyle: 'none', display: 'grid', gap: '1.1rem' }}>
+            <li style={{ borderLeft: '3px solid var(--deny)', paddingLeft: '1rem' }}>
+              <strong>Parser Fallback Substring Match:</strong>{' '}
+              <span>
+                In the immutable deployed contract, non-JSON prose containing the substring{' '}
+                <code className="font-mono">"verdict": "ALLOW"</code> matches the fallback branch and returns{' '}
+                <code className="font-mono">ALLOW</code>.
+              </span>
+            </li>
+            <li style={{ borderLeft: '3px solid var(--escalate)', paddingLeft: '1rem' }}>
+              <strong>15-Decision Policy Slice (No Time Dimension):</strong>{' '}
+              <span>
+                Velocity inspects the 15 most recent decisions of the policy, filters by category, takes at most 10, and sums cleared amounts without time windows.
+              </span>
+            </li>
+            <li style={{ borderLeft: '3px solid var(--accent)', paddingLeft: '1rem' }}>
+              <strong>Advisory Clearance Flag:</strong>{' '}
+              <span>
+                <code className="font-mono">is_cleared(decision_id)</code> is an advisory boolean; downstream contracts must verify decision fields and caller permissions.
+              </span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* 5. FINAL CTA & CONTRACT IDENTITY */}
+      <section id="cta" className="landing-section">
+        <div className="panel-dark">
+          <h2 style={{ marginBottom: '0.75rem', fontSize: '1.85rem' }}>Inspect Live Studionet State</h2>
+          <p style={{ marginBottom: '1rem', fontSize: '0.98rem', opacity: 0.92 }}>
+            Deployed Contract:{' '}
+            <ScrambleText value={contractAddress} className="font-mono" />
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+            <Link to="/app" className="btn btn-secondary">
+              Launch Court Explorer
+            </Link>
+            <Link to="/evidence" className="btn btn-secondary">
+              Verified Receipts
+            </Link>
+            <a
+              href="https://github.com/huzyow155/guardrail-court-genlayer"
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-secondary"
+            >
+              Contract GitHub
+            </a>
+            <a
+              href="https://github.com/huzyow155/guardrail-court-app"
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-secondary"
+            >
+              dApp GitHub
+            </a>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

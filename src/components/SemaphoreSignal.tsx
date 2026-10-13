@@ -17,23 +17,23 @@ export const SemaphoreSignal: React.FC<SemaphoreSignalProps> = ({
 
   let signalClass = 'signal-deny';
   let armRotation = '90deg'; // Vertical stop
-  let color = '#D6001C';
+  let color = 'var(--deny, #A63A3A)';
   let displayLabel = 'DENY';
 
   if (norm === 'ALLOW' || norm === 'CLEARED') {
     signalClass = 'signal-allow';
     armRotation = '0deg'; // Horizontal clear
-    color = '#00A347';
+    color = 'var(--allow, #286E45)';
     displayLabel = 'ALLOW';
   } else if (norm === 'ESCALATE' || norm === 'PENDING' || norm === 'PENDING_OWNER') {
     signalClass = 'signal-escalate';
     armRotation = '45deg'; // Diagonal attention
-    color = '#FF8C00';
+    color = 'var(--escalate, #8C530A)';
     displayLabel = 'ESCALATE';
   } else if (norm === 'PAUSED') {
     signalClass = 'signal-paused';
     armRotation = '90deg';
-    color = '#64748B';
+    color = 'var(--paused, #5B6577)';
     displayLabel = 'PAUSED';
   }
 
@@ -50,8 +50,8 @@ export const SemaphoreSignal: React.FC<SemaphoreSignalProps> = ({
         aria-hidden="true"
       >
         {/* Signal Mast */}
-        <line x1="20" y1="36" x2="20" y2="14" stroke="#001FEB" strokeWidth="2.5" />
-        <circle cx="20" cy="14" r="3.5" fill="#001FEB" />
+        <line x1="20" y1="36" x2="20" y2="14" stroke="var(--ink, #17214F)" strokeWidth="2.5" />
+        <circle cx="20" cy="14" r="3.5" fill="var(--ink, #17214F)" />
 
         {/* Semaphore Arm */}
         <g
@@ -74,7 +74,7 @@ export const SemaphoreSignal: React.FC<SemaphoreSignalProps> = ({
         </g>
       </svg>
       {showLabel && (
-        <span className="semaphore-label" style={{ color: color, fontWeight: 700 }}>
+        <span className="semaphore-label odometer-digit" style={{ color, fontWeight: 700 }}>
           {displayLabel}
         </span>
       )}

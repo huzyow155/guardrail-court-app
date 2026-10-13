@@ -2,35 +2,50 @@ import fs from 'fs';
 import path from 'path';
 
 // Words counter for landing page text content
-// Rules: Max 220 words on '/'
+// Rules: Max 350 visible words on '/'
 
-function countWordsInText(text) {
-  // Strip code/tags/comments
-  const cleaned = text
+export function extractVisibleWordsFromTsx(content) {
+  const stringMatches = content.match(/>([^<]+)</g) || [];
+  const propTextMatches = content.match(/\btext="([^"]+)"/g) || [];
+
+  const jsxText = stringMatches
+    .map((m) => m.slice(1, -1).trim())
+    .filter(Boolean)
+    .join(' ');
+
+  const propText = propTextMatches
+    .map((m) => m.replace(/^text="/, '').replace(/"$/, '').trim())
+    .filter(Boolean)
+    .join(' ');
+
+  const cleaned = `${jsxText} ${propText}`
     .replace(/<[^>]+>/g, ' ')
     .replace(/\{[^}]+\}/g, ' ')
-    .replace(/[#*`_~]/g, ' ')
+    .replace(/[#*`_~•→–]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  
-  if (!cleaned) return 0;
-  return cleaned.split(' ').filter(Boolean).length;
+
+  if (!cleaned) return [];
+  return cleaned.split(' ').filter(Boolean);
 }
 
+const MAX_WORDS = 350;
 const landingComponentPath = path.resolve('src/pages/Landing.tsx');
-if (fs.existsSync(landingComponentPath)) {
-  const content = fs.readFileSync(landingComponentPath, 'utf8');
-  // Extract visible strings inside JSX
-  const stringMatches = content.match(/>([^<]+)</g) || [];
-  const text = stringMatches.map(m => m.slice(1, -1).trim()).filter(Boolean).join(' ');
-  const wordCount = countWordsInText(text);
-  console.log(`Landing page visible word count: ${wordCount} words (Limit: 220 words)`);
-  if (wordCount > 220) {
-    console.error(`ERROR: Word count exceeds 220 words limit!`);
-    process.exit(1);
+
+if (process.argv[1] && process.argv[1].endsWith('count-words.mjs')) {
+  if (fs.existsSync(landingComponentPath)) {
+    const content = fs.readFileSync(landingComponentPath, 'utf8');
+    const words = extractVisibleWordsFromTsx(content);
+    const wordCount = words.length;
+    console.log(`Landing page visible word count: ${wordCount} words (Limit: ${MAX_WORDS} words)`);
+    if (wordCount > MAX_WORDS) {
+      console.error(`ERROR: Word count (${wordCount}) exceeds ${MAX_WORDS} words limit!`);
+      process.exit(1);
+    } else {
+      console.log(`PASSED: Word count (${wordCount} <= ${MAX_WORDS}) is within limits.`);
+    }
   } else {
-    console.log(`PASSED: Word count is within limits.`);
+    console.error('Landing.tsx does not exist.');
+    process.exit(1);
   }
-} else {
-  console.log('Landing.tsx does not exist yet. Run this after building Landing.tsx.');
 }

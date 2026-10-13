@@ -129,8 +129,12 @@ const evidence = {
   ],
   statsSummary: {
     totalDecisions: 10,
+    llmDecisionsCount: 8,
+    llmDecisionsMinLatencySec: 11.9,
+    llmDecisionsMaxLatencySec: 32.0,
     llmDecisionsMeanLatencySec: 19.02,
     deterministicMeanLatencySec: 5.28,
+    deterministicGuardSummarySec: 5.3,
     failClosedRatePercent: 100
   }
 };
