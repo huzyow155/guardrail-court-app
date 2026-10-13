@@ -1,14 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-import { extractVisibleWordsFromTsx } from '../../scripts/count-words.mjs';
+import { auditWordCounts, LANDING_MAX_WORDS, APP_MAX_STATIC_WORDS } from '../../scripts/count-words.mjs';
 
-describe('Editorial Landing Page Word Count Bounds', () => {
-  it('landing page contains complete 6-section editorial narrative within bounds (250..1350 words)', () => {
-    const landingPath = path.resolve('src/pages/Landing.tsx');
-    const content = fs.readFileSync(landingPath, 'utf8');
-    const words = extractVisibleWordsFromTsx(content);
-    expect(words.length).toBeGreaterThanOrEqual(250);
-    expect(words.length).toBeLessThanOrEqual(1350);
+describe('Strict Word Budget Verification', () => {
+  it(`landing page visible word count is strictly <= ${LANDING_MAX_WORDS} words`, () => {
+    const results = auditWordCounts();
+    expect(results.landing.count).toBeLessThanOrEqual(LANDING_MAX_WORDS);
+    expect(results.landing.pass).toBe(true);
+  });
+
+  it(`all /app pages contain <= ${APP_MAX_STATIC_WORDS} static descriptive words each`, () => {
+    const results = auditWordCounts();
+    for (const appPage of results.app) {
+      expect(appPage.count, `${appPage.name} had ${appPage.count} static words > ${APP_MAX_STATIC_WORDS}`).toBeLessThanOrEqual(APP_MAX_STATIC_WORDS);
+      expect(appPage.pass).toBe(true);
+    }
   });
 });

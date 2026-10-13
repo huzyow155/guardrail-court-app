@@ -16,10 +16,10 @@ interface DotFieldProps {
 }
 
 const VERDICT_RGB: Record<RippleVerdict, string> = {
-  NEUTRAL: '59, 111, 182',  // --dot (#3B6FB6 crisp cobalt-sky blue)
-  ALLOW:   '15, 110, 75',   // --allow (#0F6E4B emerald-teal)
-  ESCALATE:'150, 79, 6',    // --escalate (#964F06 amber-gold)
-  DENY:    '176, 42, 55',   // --deny (#B02A37 crimson-rose)
+  NEUTRAL: '104, 151, 255',  // --dot soft luminous cyan/blue on black
+  ALLOW:   '52, 211, 153',   // --allow (#34D399 emerald)
+  ESCALATE:'251, 191, 36',   // --escalate (#FBBF24 amber)
+  DENY:    '248, 113, 113',  // --deny (#F87171 rose)
 };
 
 export const DotField: React.FC<DotFieldProps> = ({

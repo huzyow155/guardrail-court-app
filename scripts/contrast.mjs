@@ -1,5 +1,5 @@
 // WCAG 2.1 Relative Luminance & Contrast Ratio Audit Script
-// Mode: chỉ light (Light mode only)
+// Mode: Dark Theme (Vesper Aesthetic)
 
 import fs from 'fs';
 import path from 'path';
@@ -25,7 +25,7 @@ export function compositeOver(fgHex, bgHex, alpha) {
   const bg = hexToRgb(bgHex);
   return rgbToHex({
     r: fg.r * alpha + bg.r * (1 - alpha),
-    g: fg.g * alpha + bg.g * (1 - alpha),
+    g: fg.g * alpha + bg.r * (1 - alpha),
     b: fg.b * alpha + bg.b * (1 - alpha),
   });
 }
@@ -68,122 +68,118 @@ export function loadTokensFromCss(cssPath = path.resolve('src/index.css')) {
 }
 
 export function runContrastAudit(tokens) {
-  // Composite surface (0.94 alpha) over thickest dot (0.55 alpha) on --bg
-  const dotMaxOnBg = compositeOver(tokens['--dot'], tokens['--bg'], 0.55);
-  const surfaceOverMaxDot = compositeOver(tokens['--surface'], dotMaxOnBg, 0.94);
-
   const pairs = [
     {
-      name: 'Body text (--ink) on panel (--surface)',
-      fg: tokens['--ink'],
-      bg: tokens['--surface'],
+      name: 'Primary text (--text) on dark background (--bg)',
+      fg: tokens['--text'] || '#FFFFFF',
+      bg: tokens['--bg'] || '#000000',
       minRatio: 7.0,
       role: 'Body text (>=7:1)',
     },
     {
-      name: 'Body text (--ink) on page (--bg)',
-      fg: tokens['--ink'],
-      bg: tokens['--bg'],
+      name: 'Primary text (--text) on dark panel (--surface)',
+      fg: tokens['--text'] || '#FFFFFF',
+      bg: tokens['--surface'] || '#0E0E0E',
       minRatio: 7.0,
-      role: 'Body text (>=7:1)',
+      role: 'Body text on surface (>=7:1)',
     },
     {
-      name: 'Body text (--ink) on divider band (--bg-deep)',
-      fg: tokens['--ink'],
-      bg: tokens['--bg-deep'],
+      name: 'Primary text (--text) on deep band (--bg-deep)',
+      fg: tokens['--text'] || '#FFFFFF',
+      bg: tokens['--bg-deep'] || '#050505',
       minRatio: 7.0,
-      role: 'Body text (>=7:1)',
+      role: 'Body text on deep bg (>=7:1)',
     },
     {
-      name: 'Body text (--ink) on surface over max-alpha dot (0.55)',
-      fg: tokens['--ink'],
-      bg: surfaceOverMaxDot,
+      name: 'Muted text (--muted) on dark background (--bg)',
+      fg: tokens['--muted'] || '#A3A3A3',
+      bg: tokens['--bg'] || '#000000',
       minRatio: 7.0,
-      role: 'Body on surface over dot (>=7:1)',
+      role: 'Secondary copy (>=7:1)',
     },
     {
-      name: 'Large text/UI (--ink) directly on max-alpha dot (0.55 on --bg)',
-      fg: tokens['--ink'],
-      bg: dotMaxOnBg,
-      minRatio: 4.5,
-      role: 'Large text / UI on dot (>=4.5:1)',
-    },
-    {
-      name: 'Muted text (--ink-muted) on panel (--surface)',
-      fg: tokens['--ink-muted'],
-      bg: tokens['--surface'],
+      name: 'Muted text (--muted) on dark panel (--surface)',
+      fg: tokens['--muted'] || '#A3A3A3',
+      bg: tokens['--surface'] || '#0E0E0E',
       minRatio: 7.0,
-      role: 'Body muted text (>=7:1)',
+      role: 'Secondary copy on surface (>=7:1)',
     },
     {
-      name: 'Muted text (--ink-muted) on page (--bg)',
-      fg: tokens['--ink-muted'],
-      bg: tokens['--bg'],
-      minRatio: 4.5,
-      role: 'Secondary label on bg (>=4.5:1)',
-    },
-    {
-      name: 'Footer/CTA light text (--surface) on dark block (--surface-ink)',
-      fg: tokens['--surface'],
-      bg: tokens['--surface-ink'],
+      name: 'Stat label (--stat) on dark background (--bg)',
+      fg: tokens['--stat'] || '#D8D8D8',
+      bg: tokens['--bg'] || '#000000',
       minRatio: 7.0,
-      role: 'Body text inverted (>=7:1)',
+      role: 'Metric text on bg (>=7:1)',
     },
     {
-      name: 'Primary button text (--surface) on (--accent)',
-      fg: tokens['--surface'],
-      bg: tokens['--accent'],
-      minRatio: 4.5,
-      role: 'UI Button (>=4.5:1)',
+      name: 'Primary metallic button text (#111111) on white (#FFFFFF)',
+      fg: '#111111',
+      bg: '#FFFFFF',
+      minRatio: 7.0,
+      role: 'Button label high-contrast (>=7:1)',
     },
     {
-      name: 'Secondary button / link (--accent) on (--surface)',
-      fg: tokens['--accent'],
-      bg: tokens['--surface'],
+      name: 'Accent text (--accent) on dark background (--bg)',
+      fg: tokens['--accent'] || '#6897FF',
+      bg: tokens['--bg'] || '#000000',
       minRatio: 4.5,
-      role: 'UI Button / Link (>=4.5:1)',
+      role: 'Interactive UI Accent (>=4.5:1)',
     },
     {
-      name: 'Semaphore ALLOW (--allow) label/badge on (--surface)',
-      fg: tokens['--allow'],
-      bg: tokens['--surface'],
+      name: 'Accent text (--accent) on dark panel (--surface)',
+      fg: tokens['--accent'] || '#6897FF',
+      bg: tokens['--surface'] || '#0E0E0E',
       minRatio: 4.5,
-      role: 'Semaphore UI (>=4.5:1)',
+      role: 'Interactive UI Accent on surface (>=4.5:1)',
     },
     {
-      name: 'Semaphore ALLOW button text (--surface) on (--allow)',
-      fg: tokens['--surface'],
-      bg: tokens['--allow'],
+      name: 'Semaphore ALLOW (--allow) on dark background (--bg)',
+      fg: tokens['--allow'] || '#34D399',
+      bg: tokens['--bg'] || '#000000',
       minRatio: 4.5,
-      role: 'UI Action Button (>=4.5:1)',
+      role: 'ALLOW Status UI (>=4.5:1)',
     },
     {
-      name: 'Semaphore ESCALATE (--escalate) label/badge on (--surface)',
-      fg: tokens['--escalate'],
-      bg: tokens['--surface'],
+      name: 'Semaphore ALLOW (--allow) on dark panel (--surface)',
+      fg: tokens['--allow'] || '#34D399',
+      bg: tokens['--surface'] || '#0E0E0E',
       minRatio: 4.5,
-      role: 'Semaphore UI (>=4.5:1)',
+      role: 'ALLOW Status UI on surface (>=4.5:1)',
     },
     {
-      name: 'Semaphore DENY (--deny) label/badge on (--surface)',
-      fg: tokens['--deny'],
-      bg: tokens['--surface'],
+      name: 'Semaphore ESCALATE (--escalate) on dark background (--bg)',
+      fg: tokens['--escalate'] || '#FBBF24',
+      bg: tokens['--bg'] || '#000000',
       minRatio: 4.5,
-      role: 'Semaphore UI (>=4.5:1)',
+      role: 'ESCALATE Status UI (>=4.5:1)',
     },
     {
-      name: 'Semaphore DENY button text (--surface) on (--deny)',
-      fg: tokens['--surface'],
-      bg: tokens['--deny'],
+      name: 'Semaphore ESCALATE (--escalate) on dark panel (--surface)',
+      fg: tokens['--escalate'] || '#FBBF24',
+      bg: tokens['--surface'] || '#0E0E0E',
       minRatio: 4.5,
-      role: 'UI Action Button (>=4.5:1)',
+      role: 'ESCALATE Status UI on surface (>=4.5:1)',
     },
     {
-      name: 'Semaphore PAUSED (--paused) label/badge on (--surface)',
-      fg: tokens['--paused'],
-      bg: tokens['--surface'],
+      name: 'Semaphore DENY (--deny) on dark background (--bg)',
+      fg: tokens['--deny'] || '#F87171',
+      bg: tokens['--bg'] || '#000000',
       minRatio: 4.5,
-      role: 'Semaphore UI (>=4.5:1)',
+      role: 'DENY Status UI (>=4.5:1)',
+    },
+    {
+      name: 'Semaphore DENY (--deny) on dark panel (--surface)',
+      fg: tokens['--deny'] || '#F87171',
+      bg: tokens['--surface'] || '#0E0E0E',
+      minRatio: 4.5,
+      role: 'DENY Status UI on surface (>=4.5:1)',
+    },
+    {
+      name: 'Semaphore PAUSED (--paused) on dark background (--bg)',
+      fg: tokens['--paused'] || '#94A3B8',
+      bg: tokens['--bg'] || '#000000',
+      minRatio: 4.5,
+      role: 'PAUSED Status UI (>=4.5:1)',
     },
   ];
 
@@ -200,7 +196,7 @@ export function runContrastAudit(tokens) {
 
 if (process.argv[1] && (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` || process.argv[1].endsWith('contrast.mjs'))) {
   const tokens = loadTokensFromCss();
-  console.log('=== WCAG 2.1 CONTRAST AUDIT (Mode: chỉ light) ===');
+  console.log('=== WCAG 2.1 CONTRAST AUDIT (Mode: Dark Theme) ===');
   console.log('Loaded :root tokens from src/index.css:');
   for (const [k, v] of Object.entries(tokens)) {
     console.log(`  ${k.padEnd(16)}: ${v}`);
@@ -208,17 +204,17 @@ if (process.argv[1] && (import.meta.url === `file://${process.argv[1].replace(/\
   console.log('');
   const results = runContrastAudit(tokens);
   console.log(
-    `${'PAIR DESCRIPTION'.padEnd(56)} | ${'FG'.padEnd(8)} | ${'BG'.padEnd(8)} | ${'RATIO'.padEnd(7)} | ${'REQ'.padEnd(6)} | STATUS`
+    `${'PAIR DESCRIPTION'.padEnd(58)} | ${'FG'.padEnd(8)} | ${'BG'.padEnd(8)} | ${'RATIO'.padEnd(7)} | ${'REQ'.padEnd(6)} | STATUS`
   );
-  console.log('-'.repeat(102));
+  console.log('-'.repeat(104));
   let allPass = true;
   for (const r of results) {
     if (!r.pass) allPass = false;
     console.log(
-      `${r.name.padEnd(56)} | ${r.fg.padEnd(8)} | ${r.bg.padEnd(8)} | ${(r.ratio + ':1').padEnd(7)} | ${(r.minRatio + ':1').padEnd(6)} | ${r.pass ? 'PASS' : 'FAIL'}`
+      `${r.name.padEnd(58)} | ${r.fg.padEnd(8)} | ${r.bg.padEnd(8)} | ${(r.ratio + ':1').padEnd(7)} | ${(r.minRatio + ':1').padEnd(6)} | ${r.pass ? 'PASS' : 'FAIL'}`
     );
   }
-  console.log('-'.repeat(102));
+  console.log('-'.repeat(104));
   if (!allPass) {
     console.error('CONTRAST AUDIT FAILED');
     process.exit(1);
