@@ -4,7 +4,7 @@
  * - Hard density cap (never exceeds maxDots)
  * - Radial expanding ripples (cursor/touch + section/tx events with verdict color)
  * - Scroll parallax (factor 0.22, within 0.15-0.30)
- * - Alpha bounded to [0.10, 0.55]
+ * - Alpha bounded to [0.10, 0.55] with elevated baseline visibility for architectural dot grid
  */
 
 export const BAYER_4X4: readonly (readonly number[])[] = [
@@ -125,7 +125,7 @@ export function computeDotFieldFrame(params: DotFieldParams): DotPoint[] {
     parallaxFactor = DEFAULT_PARALLAX_FACTOR,
     baseGap = 22,
     maxDots = DEFAULT_MAX_DOTS,
-    baseRadius = 1.8,
+    baseRadius = 1.9,
     ripples = [],
     reducedMotion = false,
   } = params;
@@ -161,17 +161,18 @@ export function computeDotFieldFrame(params: DotFieldParams): DotPoint[] {
       const y = ((r * gap + gap * 0.5 - subRowOffset + height) % height);
 
       const noiseVal = seededNoise2D(
-        c * 0.14 + effectiveTime * 0.00018,
-        worldRow * 0.14 + effectiveTime * 0.00014,
+        c * 0.14 + effectiveTime * 0.00014,
+        worldRow * 0.14 + effectiveTime * 0.00011,
         seed
       );
       const waveVal =
-        (Math.sin(c * 0.16 + effectiveTime * 0.0009 + seed * 0.1) +
-          Math.cos(worldRow * 0.15 - effectiveTime * 0.0008)) *
+        (Math.sin(c * 0.16 + effectiveTime * 0.0007 + seed * 0.1) +
+          Math.cos(worldRow * 0.15 - effectiveTime * 0.0006)) *
         0.25 +
         0.5;
 
-      let fieldIntensity = (noiseVal * 0.65 + waveVal * 0.35) * 16; // 0..16
+      // Elevated architectural field intensity so the dot matrix is clearly visible
+      let fieldIntensity = 3.2 + (noiseVal * 0.65 + waveVal * 0.35) * 14.5;
       let dotVerdict: RippleVerdict = 'NEUTRAL';
       let rippleBoost = 0;
 
@@ -204,11 +205,11 @@ export function computeDotFieldFrame(params: DotFieldParams): DotPoint[] {
       const threshold = BAYER_4X4[bayerRow][bayerCol];
 
       if (fieldIntensity > threshold) {
-        const normalized = Math.min(1, Math.max(0, (fieldIntensity - threshold) / 16));
-        // Strictly clamp alpha to [0.10, 0.55] (lower alpha for verdict ripples so text never loses contrast)
-        const rawAlpha = 0.10 + normalized * 0.32 + rippleBoost * 0.13;
+        const normalized = Math.min(1, Math.max(0, (fieldIntensity - threshold) / 14));
+        // Strictly clamp alpha to [0.10, 0.55] with higher baseline (0.19..0.52) for unmistakable visibility
+        const rawAlpha = 0.19 + normalized * 0.29 + rippleBoost * 0.12;
         const alpha = Number(Math.min(0.55, Math.max(0.10, rawAlpha)).toFixed(3));
-        const radius = Number((baseRadius * (0.85 + normalized * 0.3 + rippleBoost * 0.35)).toFixed(2));
+        const radius = Number((baseRadius * (0.88 + normalized * 0.28 + rippleBoost * 0.32)).toFixed(2));
 
         dots.push({
           x: Math.round(x * 10) / 10,

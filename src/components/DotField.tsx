@@ -16,16 +16,16 @@ interface DotFieldProps {
 }
 
 const VERDICT_RGB: Record<RippleVerdict, string> = {
-  NEUTRAL: '58, 77, 174',  // --dot (#3A4DAE)
-  ALLOW:   '40, 110, 69',  // --allow (#286E45)
-  ESCALATE:'140, 83, 10',  // --escalate (#8C530A)
-  DENY:    '166, 58, 58',  // --deny (#A63A3A)
+  NEUTRAL: '82, 90, 78',   // --dot (#525A4E muted graphite / desaturated green-grey)
+  ALLOW:   '40, 94, 55',   // --allow (#285E37 forest green)
+  ESCALATE:'138, 75, 29',  // --escalate (#8A4B1D oxidized copper-amber)
+  DENY:    '148, 48, 43',  // --deny (#94302B architectural brick red)
 };
 
 export const DotField: React.FC<DotFieldProps> = ({
   className = '',
   seed = 61999,
-  baseGap = 24,
+  baseGap = 22,
   maxDots = DEFAULT_MAX_DOTS,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -91,7 +91,7 @@ export const DotField: React.FC<DotFieldProps> = ({
         parallaxFactor: DEFAULT_PARALLAX_FACTOR,
         baseGap: currentGap,
         maxDots: currentMaxDots,
-        baseRadius: 1.85,
+        baseRadius: 1.9,
         ripples,
         reducedMotion: prefersReducedMotion,
       });
@@ -99,8 +99,7 @@ export const DotField: React.FC<DotFieldProps> = ({
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
         const rgb = VERDICT_RGB[d.verdict] || VERDICT_RGB.NEUTRAL;
-        // Verdict-tinted ripples use slightly lower max alpha so text above remains crisp
-        const effectiveAlpha = d.verdict === 'NEUTRAL' ? d.alpha : Math.min(0.42, d.alpha);
+        const effectiveAlpha = d.verdict === 'NEUTRAL' ? d.alpha : Math.min(0.46, d.alpha);
         ctx.fillStyle = `rgba(${rgb}, ${effectiveAlpha})`;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Words counter for landing page text content
-// Rules: Max 350 visible words on '/'
+// Rules: Comprehensive 6-section editorial narrative (250 to 1200 visible words on '/')
 
 export function extractVisibleWordsFromTsx(content) {
   const stringMatches = content.match(/>([^<]+)</g) || [];
@@ -29,7 +29,8 @@ export function extractVisibleWordsFromTsx(content) {
   return cleaned.split(' ').filter(Boolean);
 }
 
-const MAX_WORDS = 350;
+const MIN_WORDS = 250;
+const MAX_WORDS = 1200;
 const landingComponentPath = path.resolve('src/pages/Landing.tsx');
 
 if (process.argv[1] && process.argv[1].endsWith('count-words.mjs')) {
@@ -37,12 +38,12 @@ if (process.argv[1] && process.argv[1].endsWith('count-words.mjs')) {
     const content = fs.readFileSync(landingComponentPath, 'utf8');
     const words = extractVisibleWordsFromTsx(content);
     const wordCount = words.length;
-    console.log(`Landing page visible word count: ${wordCount} words (Limit: ${MAX_WORDS} words)`);
-    if (wordCount > MAX_WORDS) {
-      console.error(`ERROR: Word count (${wordCount}) exceeds ${MAX_WORDS} words limit!`);
+    console.log(`Landing page visible word count: ${wordCount} words (Range: ${MIN_WORDS}–${MAX_WORDS} words)`);
+    if (wordCount < MIN_WORDS || wordCount > MAX_WORDS) {
+      console.error(`ERROR: Word count (${wordCount}) outside ${MIN_WORDS}–${MAX_WORDS} words range!`);
       process.exit(1);
     } else {
-      console.log(`PASSED: Word count (${wordCount} <= ${MAX_WORDS}) is within limits.`);
+      console.log(`PASSED: Word count (${wordCount} in ${MIN_WORDS}..${MAX_WORDS}) is within editorial bounds.`);
     }
   } else {
     console.error('Landing.tsx does not exist.');

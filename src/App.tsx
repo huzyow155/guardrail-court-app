@@ -23,49 +23,50 @@ const NavigationBar: React.FC = () => {
   return (
     <div className="site-header-wrap">
       <header className="site-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.15rem', flexWrap: 'wrap' }}>
           <Link to="/" className="site-logo">
-            <span
-              style={{
-                display: 'inline-block',
-                width: '10px',
-                height: '10px',
-                backgroundColor: 'var(--accent)',
-                borderRadius: '50%',
-              }}
-            />
-            Guardrail Court
+            <span className="site-logo-mark" aria-hidden="true">
+              GC
+            </span>
+            <span>Guardrail Court</span>
           </Link>
 
           {isLanding && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }} aria-label="Page sections">
+            <div className="nav-anchor-group" aria-label="Page sections">
+              <a
+                href="#problem"
+                className="nav-anchor"
+                onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' })}
+              >
+                01 Problem
+              </a>
               <a
                 href="#guards"
                 className="nav-anchor"
                 onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'ALLOW' })}
               >
-                #guards
+                02 Guards
+              </a>
+              <a
+                href="#workflow"
+                className="nav-anchor"
+                onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' })}
+              >
+                03 Pipeline
               </a>
               <a
                 href="#metrics"
                 className="nav-anchor"
                 onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' })}
               >
-                #metrics
+                04 Evidence
               </a>
               <a
                 href="#limits"
                 className="nav-anchor"
                 onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'ESCALATE' })}
               >
-                #limits
-              </a>
-              <a
-                href="#cta"
-                className="nav-anchor"
-                onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' })}
-              >
-                #cta
+                05 Limits
               </a>
             </div>
           )}
@@ -86,7 +87,7 @@ const NavigationBar: React.FC = () => {
           </Link>
 
           {isConnected ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.35rem' }}>
               <span
                 className="badge font-mono"
                 style={{ background: 'var(--surface)', borderColor: 'var(--ink)', color: 'var(--ink)' }}
@@ -98,7 +99,11 @@ const NavigationBar: React.FC = () => {
               </button>
             </div>
           ) : (
-            <button className="btn btn-sm btn-primary" onClick={connectWallet}>
+            <button
+              className="btn btn-sm btn-primary"
+              style={{ marginLeft: '0.35rem' }}
+              onClick={connectWallet}
+            >
               Connect Wallet
             </button>
           )}
@@ -138,14 +143,17 @@ export const App: React.FC = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '1rem',
+                gap: '1.25rem',
               }}
             >
               <div>
-                <strong>Guardrail Court</strong> • Advisory Policy Gate on GenLayer Studionet (Chain ID 61999)
+                <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1rem' }}>Guardrail Court</strong>
+                <span style={{ opacity: 0.85, marginLeft: '0.6rem' }}>
+                  On-Chain Risk & Spending Control for Autonomous Agents • GenLayer Studionet (Chain ID 61999)
+                </span>
               </div>
-              <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <span className="font-mono" style={{ fontSize: '0.82rem' }}>
+              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <span className="font-mono" style={{ fontSize: '0.8rem', wordBreak: 'break-all' }}>
                   Contract:{' '}
                   <a
                     href="https://explorer-studio.genlayer.com/address/0x6C553Ba27a768D71b570a106D9D2e13553b4103c"

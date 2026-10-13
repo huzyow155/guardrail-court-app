@@ -3,12 +3,12 @@ import fs from 'fs';
 import path from 'path';
 import { extractVisibleWordsFromTsx } from '../../scripts/count-words.mjs';
 
-describe('Word Count Limits', () => {
-  it('landing page strictly contains 350 words or fewer', () => {
+describe('Editorial Landing Page Word Count Bounds', () => {
+  it('landing page contains complete 6-section editorial narrative within bounds (250..1200 words)', () => {
     const landingPath = path.resolve('src/pages/Landing.tsx');
     const content = fs.readFileSync(landingPath, 'utf8');
     const words = extractVisibleWordsFromTsx(content);
-    expect(words.length).toBeGreaterThan(50);
-    expect(words.length).toBeLessThanOrEqual(350);
+    expect(words.length).toBeGreaterThanOrEqual(250);
+    expect(words.length).toBeLessThanOrEqual(1200);
   });
 });

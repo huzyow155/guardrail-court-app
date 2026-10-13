@@ -17,23 +17,23 @@ export const SemaphoreSignal: React.FC<SemaphoreSignalProps> = ({
 
   let signalClass = 'signal-deny';
   let armRotation = '90deg'; // Vertical stop
-  let color = 'var(--deny, #A63A3A)';
+  let color = 'var(--deny, #94302B)';
   let displayLabel = 'DENY';
 
   if (norm === 'ALLOW' || norm === 'CLEARED') {
     signalClass = 'signal-allow';
     armRotation = '0deg'; // Horizontal clear
-    color = 'var(--allow, #286E45)';
+    color = 'var(--allow, #285E37)';
     displayLabel = 'ALLOW';
   } else if (norm === 'ESCALATE' || norm === 'PENDING' || norm === 'PENDING_OWNER') {
     signalClass = 'signal-escalate';
     armRotation = '45deg'; // Diagonal attention
-    color = 'var(--escalate, #8C530A)';
+    color = 'var(--escalate, #8A4B1D)';
     displayLabel = 'ESCALATE';
   } else if (norm === 'PAUSED') {
     signalClass = 'signal-paused';
     armRotation = '90deg';
-    color = 'var(--paused, #5B6577)';
+    color = 'var(--paused, #525750)';
     displayLabel = 'PAUSED';
   }
 
@@ -50,8 +50,8 @@ export const SemaphoreSignal: React.FC<SemaphoreSignalProps> = ({
         aria-hidden="true"
       >
         {/* Signal Mast */}
-        <line x1="20" y1="36" x2="20" y2="14" stroke="var(--ink, #17214F)" strokeWidth="2.5" />
-        <circle cx="20" cy="14" r="3.5" fill="var(--ink, #17214F)" />
+        <line x1="20" y1="36" x2="20" y2="14" stroke="var(--ink, #1E211D)" strokeWidth="2.5" />
+        <circle cx="20" cy="14" r="3.5" fill="var(--ink, #1E211D)" />
 
         {/* Semaphore Arm */}
         <g
