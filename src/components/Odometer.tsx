@@ -17,7 +17,7 @@ export const Odometer: React.FC<OdometerProps> = ({
   const isFloat = String(value).includes('.');
   const decimals = isFloat ? String(value).split('.')[1]?.length || 2 : 0;
 
-  const [displayValue, setDisplayValue] = useState<number>(0);
+  const [displayValue, setDisplayValue] = useState<number>(numericValue);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

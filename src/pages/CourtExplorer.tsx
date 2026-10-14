@@ -319,7 +319,7 @@ export const CourtExplorer: React.FC = () => {
       {policy && (
         <>
           {/* Policy Overview Header */}
-          <div className="panel">
+          <div className="panel" style={{ minHeight: '190px' }}>
             <div className="panel-header">
               <div>
                 <h2 style={{ fontSize: '1.15rem' }}>Policy #{policy.id}</h2>
@@ -377,6 +377,7 @@ export const CourtExplorer: React.FC = () => {
                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                 gap: '1rem',
                 marginBottom: '1.5rem',
+                minHeight: '88px',
               }}
             >
               <div className="panel" style={{ margin: 0, textAlign: 'center', padding: '1rem' }}>
