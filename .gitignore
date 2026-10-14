@@ -38,3 +38,4 @@ throwaway_key*
 *.sw?
 .vercel
 .chrome-headless*/
+.chrome-cls-diag/

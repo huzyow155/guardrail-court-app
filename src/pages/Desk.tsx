@@ -11,6 +11,7 @@ import { SemaphoreSignal } from '../components/SemaphoreSignal';
 import { SectionHeading, ScrambleText, RealTxTimer } from '../hooks/useReveal';
 import { triggerDotFieldRipple } from '../lib/dotfield';
 import { useWallet } from '../context/WalletContext';
+import { resolveEscalation } from '../services/contractWrite';
 
 export const Desk: React.FC = () => {
   const { address, isConnected, connectWallet } = useWallet();
@@ -57,15 +58,21 @@ export const Desk: React.FC = () => {
       setNotice('Please connect the policy owner wallet to resolve.');
       return;
     }
+    if (policy && address.toLowerCase() !== policy.owner.toLowerCase()) {
+      setNotice(
+        `Unauthorized: Only policy owner (${policy.owner.slice(0, 6)}...${policy.owner.slice(-4)}) can resolve.`
+      );
+      return;
+    }
     setResolvingId(decisionId);
-    setNotice(`Submitting resolve_escalation(${decisionId}, ${outcome}) to Studionet...`);
+    setNotice(`Submitting resolve_escalation(#${decisionId}, ${outcome}) to Studionet validators...`);
     try {
-      setTimeout(() => {
-        setNotice(`Resolution intent submitted: ${outcome}. Waiting for block confirmation.`);
-        setResolvingId(null);
-      }, 1500);
+      const result = await resolveEscalation(decisionId, outcome);
+      setNotice(`Resolved decision #${decisionId} as ${outcome}! (Tx: ${result.hash})`);
+      await fetchDeskData(policyId);
     } catch (err: any) {
-      setNotice(`Error: ${err.message}`);
+      setNotice(`Error: ${err?.message || 'Transaction submission failed'}`);
+    } finally {
       setResolvingId(null);
     }
   };

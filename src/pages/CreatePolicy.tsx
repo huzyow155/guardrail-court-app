@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
 import { SectionHeading, RealTxTimer } from '../hooks/useReveal';
 import { triggerDotFieldRipple } from '../lib/dotfield';
+import { createPolicy } from '../services/contractWrite';
 
 export const CreatePolicy: React.FC = () => {
   const { address, isConnected, connectWallet, chainId, switchToStudionet } = useWallet();
@@ -14,10 +16,14 @@ export const CreatePolicy: React.FC = () => {
   const [windowCap, setWindowCap] = useState<string>('400');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [createdPolicyId, setCreatedPolicyId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setTxHash(null);
+    setCreatedPolicyId(null);
     triggerDotFieldRipple({ element: e.currentTarget, verdict: 'ALLOW' });
 
     if (!window.ethereum || !address) {
@@ -41,7 +47,9 @@ export const CreatePolicy: React.FC = () => {
 
     setSubmitting(true);
     try {
-      setError('Submitting to GenLayer Studionet validators...');
+      const result = await createPolicy(agentAddress, policyText, maxAmount, windowCap);
+      setTxHash(result.hash);
+      setCreatedPolicyId(result.returnValue || 'Success');
     } catch (err: any) {
       console.error('Create policy error:', err);
       setError(err?.message || 'Transaction submission failed');
@@ -98,9 +106,21 @@ export const CreatePolicy: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '1.15rem' }}>
-              <label htmlFor="agent-addr" style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem' }}>
-                Authorized Agent Address
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <label htmlFor="agent-addr" style={{ fontWeight: 600 }}>
+                  Authorized Agent Address
+                </label>
+                {address && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                    onClick={() => setAgentAddress(address)}
+                  >
+                    Use Connected
+                  </button>
+                )}
+              </div>
               <input
                 id="agent-addr"
                 type="text"
@@ -213,6 +233,42 @@ export const CreatePolicy: React.FC = () => {
                 'Deploy Policy on Studionet'
               )}
             </button>
+
+            {createdPolicyId && (
+              <div
+                className="panel"
+                style={{
+                  marginTop: '1.25rem',
+                  borderColor: 'var(--allow)',
+                  background: 'rgba(52, 211, 153, 0.05)',
+                }}
+              >
+                <div style={{ color: 'var(--allow)', fontWeight: 700, marginBottom: '0.5rem' }}>
+                  Policy #{createdPolicyId} Deployed
+                </div>
+                {txHash && (
+                  <div style={{ fontSize: '0.85rem', marginBottom: '0.75rem', wordBreak: 'break-all' }}>
+                    Tx:{' '}
+                    <a
+                      href={`https://explorer-studio.genlayer.com/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-link"
+                    >
+                      {txHash}
+                    </a>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <Link to={`/app/request?policyId=${createdPolicyId}`} className="btn btn-sm btn-allow">
+                    Request Action Now
+                  </Link>
+                  <Link to={`/app/policy/${createdPolicyId}`} className="btn btn-sm btn-secondary">
+                    View in Explorer
+                  </Link>
+                </div>
+              </div>
+            )}
           </form>
         )}
       </div>

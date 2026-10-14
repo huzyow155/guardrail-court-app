@@ -1,0 +1,125 @@
+{
+  "timestamp": "2026-10-14T08:52:27.916Z",
+  "network": "GenLayer Studionet (Chain ID 61999)",
+  "contractAddress": "0x6C553Ba27a768D71b570a106D9D2e13553b4103c",
+  "callerAccount": "0xa359c620Ca5c539a473cfb983d9eD4333c64FA24",
+  "policyId": "7",
+  "escalatedDecisionId": "18",
+  "records": [
+    {
+      "step": "Step 1: create_policy",
+      "function": "create_policy",
+      "args": [
+        "0xa359c620Ca5c539a473cfb983d9eD4333c64FA24",
+        "The agent may buy cloud services, domains, and developer tools. Prohibit adult content, gambling, gifts, and cryptocurrency. Ambiguous or suspicious requests must escalate.",
+        "100",
+        "80"
+      ],
+      "txHash": "0xbc909da498aa2c9c14bffb268720bf1f234d5d2d7cf1dcea5e42ed2b54198c9b",
+      "status": "ACCEPTED",
+      "consensus": "MAJORITY_AGREE",
+      "execResult": "SUCCESS",
+      "latencySec": 8.03,
+      "payload": "\"7\"",
+      "error": null
+    },
+    {
+      "step": "Step 2a: request_action (ALLOW)",
+      "function": "request_action",
+      "args": [
+        "7",
+        "cloud_ops",
+        "50",
+        "Subscribing to dedicated GPU cloud server for dev machine training"
+      ],
+      "txHash": "0x677cee37725abb30af5c64b0c803fb194e5e5f430f81861d322c203fd0f7f6e1",
+      "status": "ACCEPTED",
+      "consensus": "MAJORITY_AGREE",
+      "execResult": "SUCCESS",
+      "latencySec": 14,
+      "payload": "\"16\"",
+      "error": null
+    },
+    {
+      "step": "Step 2b: request_action (HARD_LIMIT)",
+      "function": "request_action",
+      "args": [
+        "7",
+        "infrastructure",
+        "150",
+        "Annual enterprise server hardware purchase"
+      ],
+      "txHash": "0xd70119d23145fb7c23367d7f53c8f01b782238f8f7b86e9a5533fda7bf44461f",
+      "status": "ACCEPTED",
+      "consensus": "MAJORITY_AGREE",
+      "execResult": "SUCCESS",
+      "latencySec": 6.77,
+      "payload": "\"17\"",
+      "error": null
+    },
+    {
+      "step": "Step 2c: request_action (VELOCITY ESCALATE)",
+      "function": "request_action",
+      "args": [
+        "7",
+        "cloud_ops",
+        "50",
+        "Subscribing to second cloud server slice part 2"
+      ],
+      "txHash": "0x4ba15f1b0f89146c448bbb55c63933c65bca5ab66bc0dceaf44e822d772d4783",
+      "status": "ACCEPTED",
+      "consensus": "MAJORITY_AGREE",
+      "execResult": "SUCCESS",
+      "latencySec": 7.03,
+      "payload": "\"18\"",
+      "error": null
+    },
+    {
+      "step": "Step 2d: resolve_escalation",
+      "function": "resolve_escalation",
+      "args": [
+        "18",
+        "ALLOW"
+      ],
+      "txHash": "0xaf5906e36f35fbe68a1284033be894113a8c3a08a35c939a9ceac3af590196c1",
+      "status": "ACCEPTED",
+      "consensus": "MAJORITY_AGREE",
+      "execResult": "SUCCESS",
+      "latencySec": 6.76,
+      "payload": "null",
+      "error": null
+    },
+    {
+      "step": "Step 2e-1: set_paused(true)",
+      "function": "set_paused",
+      "args": [
+        "7",
+        true
+      ],
+      "txHash": "0x3e4f64d8fbc59d3de74b0ce2f2807c73335cb4124c2ff1f1b8461b1a7a5c5318",
+      "status": "ACCEPTED",
+      "consensus": "MAJORITY_AGREE",
+      "execResult": "SUCCESS",
+      "latencySec": 6.67,
+      "payload": "null",
+      "error": null
+    },
+    {
+      "step": "Step 2e-2: request_action (REJECTED)",
+      "function": "request_action",
+      "args": [
+        "7",
+        "cloud_ops",
+        "20",
+        "Another cloud subscription while paused"
+      ],
+      "txHash": "0x30283d0fae13b0025a0e6ce9b570f2e01ed5e6beda52e02e5a34e151adc24c3f",
+      "status": "ACCEPTED",
+      "consensus": "MAJORITY_AGREE",
+      "execResult": "ERROR",
+      "latencySec": 6.84,
+      "payload": "\"policy is paused\"",
+      "error": null
+    }
+  ]
+}

@@ -11,9 +11,10 @@ import {
 } from '../services/contractClient';
 import { SemaphoreSignal } from '../components/SemaphoreSignal';
 import { Odometer } from '../components/Odometer';
-import { SectionHeading, ScrambleText } from '../hooks/useReveal';
+import { SectionHeading, ScrambleText, RealTxTimer } from '../hooks/useReveal';
 import { triggerDotFieldRipple } from '../lib/dotfield';
 import { useWallet } from '../context/WalletContext';
+import { setPaused } from '../services/contractWrite';
 
 // Verified on-chain snapshot for Policy #1 (0x6C553Ba27a768D71b570a106D9D2e13553b4103c)
 // Eliminates layout shift (CLS = 0) and provides verified fallback if browser RPC CORS/IPv6 fails
@@ -248,8 +249,27 @@ export const CourtExplorer: React.FC = () => {
     loadPolicyData(selectedPolicyId);
   }, [selectedPolicyId]);
 
+  const [togglingPause, setTogglingPause] = useState<boolean>(false);
+  const [pauseNotice, setPauseNotice] = useState<string | null>(null);
+
   const isOwner =
-    policy && address && policy.owner.toLowerCase() === address.toLowerCase();
+    Boolean(policy && address && policy.owner.toLowerCase() === address.toLowerCase());
+
+  const handleTogglePause = async () => {
+    if (!policy) return;
+    setTogglingPause(true);
+    setPauseNotice(null);
+    try {
+      const nextPaused = !policy.paused;
+      await setPaused(policy.id, nextPaused);
+      setPauseNotice(`Policy #${policy.id} ${nextPaused ? 'paused' : 'unpaused'} successfully.`);
+      await loadPolicyData(selectedPolicyId);
+    } catch (err: any) {
+      setPauseNotice(`Error: ${err?.message || 'Failed to update pause state'}`);
+    } finally {
+      setTogglingPause(false);
+    }
+  };
 
   return (
     <div className="court-explorer" style={{ padding: '0', minHeight: '800px' }}>
@@ -268,7 +288,7 @@ export const CourtExplorer: React.FC = () => {
       >
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#ffffff', letterSpacing: '0.05em' }}>POLICY:</span>
-          {['1', '2', '3'].map((pid) => (
+          {['1', '2', '3', '4', '5'].map((pid) => (
             <button
               key={pid}
               className={`btn btn-sm ${selectedPolicyId === pid ? 'btn-primary' : 'btn-secondary'}`}
@@ -277,7 +297,7 @@ export const CourtExplorer: React.FC = () => {
                 triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' });
               }}
             >
-              Policy #{pid} {pid === '1' ? '(Reference)' : ''}
+              #{pid} {pid === '1' ? '(Reference)' : ''}
             </button>
           ))}
         </div>
@@ -297,6 +317,20 @@ export const CourtExplorer: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {pauseNotice && (
+        <div
+          className="panel"
+          style={{
+            marginBottom: '1rem',
+            background: 'var(--bg)',
+            borderColor: 'var(--ink)',
+            padding: '0.75rem 1rem',
+          }}
+        >
+          <strong>Notice:</strong> {pauseNotice}
+        </div>
+      )}
 
       {loading && !policy && (
         <div className="panel" style={{ minHeight: '240px' }}>
@@ -327,11 +361,31 @@ export const CourtExplorer: React.FC = () => {
                   SHA256: <ScrambleText value={policy.policy_sha} />
                 </div>
               </div>
-              <SemaphoreSignal
-                verdict={policy.paused ? 'PAUSED' : 'ALLOW'}
-                size="sm"
-                showLabel={true}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <SemaphoreSignal
+                  verdict={policy.paused ? 'PAUSED' : 'ALLOW'}
+                  size="sm"
+                  showLabel={true}
+                />
+                {isOwner && (
+                  <button
+                    disabled={togglingPause}
+                    className={`btn btn-sm ${policy.paused ? 'btn-allow' : 'btn-deny'}`}
+                    onClick={handleTogglePause}
+                    style={{ marginLeft: '6px' }}
+                  >
+                    {togglingPause ? (
+                      <>
+                        Updating <RealTxTimer active={togglingPause} />
+                      </>
+                    ) : policy.paused ? (
+                      'Unpause'
+                    ) : (
+                      'Pause'
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div style={{ marginBottom: '1.25rem', fontStyle: 'italic', fontSize: '0.95rem', minHeight: '44px', lineHeight: '1.45' }}>

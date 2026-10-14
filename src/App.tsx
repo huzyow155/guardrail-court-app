@@ -8,6 +8,7 @@ import { CourtExplorer } from './pages/CourtExplorer';
 import { DecisionDetail } from './pages/DecisionDetail';
 import { CreatePolicy } from './pages/CreatePolicy';
 import { Desk } from './pages/Desk';
+import { RequestAction } from './pages/RequestAction';
 import { triggerDotFieldRipple } from './lib/dotfield';
 
 const NavigationBar: React.FC = () => {
@@ -96,9 +97,16 @@ const NavigationBar: React.FC = () => {
               Explorer
             </Link>
             <Link
+              to="/app/request"
+              className={`appear appear--soft ${pathname === '/app/request' ? 'active' : ''}`}
+              style={{ '--d': '.22s' } as React.CSSProperties}
+            >
+              Request
+            </Link>
+            <Link
               to="/app/desk"
               className={`appear appear--scale ${pathname === '/app/desk' ? 'active' : ''}`}
-              style={{ '--d': '.24s' } as React.CSSProperties}
+              style={{ '--d': '.26s' } as React.CSSProperties}
             >
               Desk
             </Link>
@@ -195,6 +203,14 @@ export const App: React.FC = () => {
                 element={
                   <div className="app-content-wrap">
                     <CourtExplorer />
+                  </div>
+                }
+              />
+              <Route
+                path="/app/request"
+                element={
+                  <div className="app-content-wrap">
+                    <RequestAction />
                   </div>
                 }
               />

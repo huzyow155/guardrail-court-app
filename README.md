@@ -40,6 +40,35 @@ GenLayer validators reach equivalence consensus on an explicit three-way enum:
 
 ---
 
+## Write Transactions & Consensus Clearance
+
+The dApp supports full on-chain write operations on GenLayer Studionet (Chain ID 61999) via `src/services/contractWrite.ts` using `genlayer-js@1.1.8`. Both injected wallets (EIP-1193 / MetaMask) and programmatic signer accounts (throwaway keys) are supported.
+
+Because gas price on Studionet is currently 0, gasless transaction broadcast is supported for burner accounts with 0 balance.
+
+### Contract Write Methods
+
+| Method | Role Guard | Description |
+| :--- | :--- | :--- |
+| `create_policy(agent: str, text: str, max_amount: str, window_cap: str) -> str` | Any caller (becomes Owner) | Registers a natural-language policy with spending caps. Returns new policy ID. |
+| `set_paused(policy_id: str, paused: bool)` | Policy Owner only | Temporarily pauses or unpauses policy execution. |
+| `request_action(policy_id: str, category: str, amount: str, description: str) -> str` | Policy Agent only | Submits an action request to the Court. Tripped by `HARD_LIMIT`, `VELOCITY`, or evaluated by `JUDGE`. |
+| `resolve_escalation(decision_id: str, outcome: str)` | Policy Owner only | Resolves ambiguous or velocity-tripped escalations (`'ALLOW'` or `'DENY'`). |
+
+All integer and ID arguments are strictly formatted and transmitted as strings to comply with the GenVM ABI standard.
+
+### Error Handling & Contract UserErrors
+
+All 16 canonical `UserError` strings from `contracts/GuardrailCourt.py` are mapped verbatim in `src/lib/errors.ts`. Transaction error payloads (base64 or plaintext stderr) from `leader_receipt[0].result.payload` are decoded into user-friendly explanations.
+
+### Live E2E On-Chain Evidence
+
+On-chain write execution flows are verified directly against Studionet validators:
+- `scripts/e2e_write_flow.mjs`: Automated execution of the 5-step write pipeline recorded in `docs/E2E_WRITE_EVIDENCE.json`.
+- `scripts/e2e_browser_flow.mjs`: Headless Chrome E2E browser interactions with injected EIP-1193 provider, capturing screenshots in `docs/screenshots/write-*.png`.
+
+---
+
 ## Known Limits
 
 - **Parser Substring Scan**: Model parser falls back to scanning for `"verdict": "ALLOW"` in uppercase prose before checking DENY; prose mentioning that substring resolves to ALLOW.

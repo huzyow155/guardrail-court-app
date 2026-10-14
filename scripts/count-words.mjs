@@ -90,6 +90,7 @@ export function auditWordCounts() {
     { name: 'CourtExplorer (/app)', file: 'src/pages/CourtExplorer.tsx' },
     { name: 'Desk (/app/desk)', file: 'src/pages/Desk.tsx' },
     { name: 'CreatePolicy (/app/new)', file: 'src/pages/CreatePolicy.tsx' },
+    { name: 'RequestAction (/app/request)', file: 'src/pages/RequestAction.tsx' },
     { name: 'DecisionDetail (/app/decision/:id)', file: 'src/pages/DecisionDetail.tsx' },
     { name: 'Evidence (/app/evidence)', file: 'src/pages/Evidence.tsx' },
   ];
