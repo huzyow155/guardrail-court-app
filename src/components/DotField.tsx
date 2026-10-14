@@ -91,7 +91,7 @@ export const DotField: React.FC<DotFieldProps> = ({
         parallaxFactor: DEFAULT_PARALLAX_FACTOR,
         baseGap: currentGap,
         maxDots: currentMaxDots,
-        baseRadius: 1.75,
+        baseRadius: 2.2,
         ripples,
         reducedMotion: prefersReducedMotion,
       });
@@ -99,7 +99,7 @@ export const DotField: React.FC<DotFieldProps> = ({
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
         const rgb = VERDICT_RGB[d.verdict] || VERDICT_RGB.NEUTRAL;
-        const effectiveAlpha = d.verdict === 'NEUTRAL' ? d.alpha : Math.min(0.46, d.alpha);
+        const effectiveAlpha = Math.min(0.85, d.alpha);
         ctx.fillStyle = `rgba(${rgb}, ${effectiveAlpha})`;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);

@@ -6,7 +6,7 @@
 @import '@fontsource/jetbrains-mono/500.css';
 
 :root {
-  /* Vesper-Inspired Dark Theme Tokens */
+  /* Dark Theme Tokens */
   --bg:               #000000;
   --bg-deep:          #050505;
   --surface:          #0E0E0E;
@@ -99,28 +99,28 @@ button {
   background: none;
 }
 
-/* Background Layers: DotField Canvas & Ambient Aurora */
-.global-dotfield-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  display: block;
-}
-
+/* Background Layers: Ambient Aurora at z:0, DotField Canvas at z:1 */
 .ambient-backdrop {
   pointer-events: none;
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 0;
   overflow: hidden;
   background:
     radial-gradient(ellipse 70% 46% at 50% 82%, rgba(24, 35, 67, 0.34), transparent 64%),
     radial-gradient(ellipse 38% 52% at 8% 48%, rgba(28, 49, 93, 0.26), transparent 72%),
     radial-gradient(ellipse 42% 46% at 92% 35%, rgba(58, 28, 82, 0.2), transparent 70%),
     linear-gradient(180deg, #010204 0%, #030508 52%, #000000 100%);
+}
+
+.global-dotfield-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  display: block;
 }
 
 .ambient-backdrop::before {
@@ -174,15 +174,28 @@ button {
   padding: 0 1.5rem;
 }
 
+.app-content-wrap {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+@media (max-width: 768px) {
+  .app-content-wrap {
+    padding: 1.25rem 1rem 3rem;
+  }
+}
+
 /* Header (3-column layout) */
 .site-header-wrap {
   position: sticky;
   top: 0;
-  z-index: 50;
-  background: rgba(0, 0, 0, 0.65);
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.94);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .site-header {
@@ -335,6 +348,39 @@ button {
   font-size: 12px;
 }
 
+/* App Button Roles */
+.btn-primary {
+  color: #111111;
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.btn-primary:hover {
+  background: #e7e7e7;
+  color: #000000;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+}
+
+.btn-secondary {
+  color: #ffffff;
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background: #2c2c2c;
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.btn[disabled], .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Mobile Burger */
 .burger {
   display: none;
@@ -378,14 +424,13 @@ button {
   display: none;
 }
 
-/* Hero Section (Vesper-Inspired, Unlocked Scroll) */
+/* Hero Section */
 .hero-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100svh - 80px);
-  padding: 48px 24px var(--hero-gap);
+  padding: 64px 24px 32px;
   text-align: center;
   position: relative;
 }
@@ -468,7 +513,7 @@ h1 em {
   align-items: center;
   justify-content: center;
   gap: 48px;
-  margin-top: 48px;
+  margin-top: 32px;
   padding: 16px 24px;
   border-top: 1px solid var(--border-soft);
   color: var(--stat);
@@ -491,7 +536,7 @@ h1 em {
 
 /* Product Sections on Landing */
 .landing-section {
-  padding: 72px 0;
+  padding: 48px 0;
   border-top: 1px solid var(--border-soft);
 }
 

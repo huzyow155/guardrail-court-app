@@ -1,7 +1,7 @@
-# Reference Analysis: Vesper.ai Single-File Template
+# Reference Analysis: Single-File Template Architecture
 
 ## 1. Overview & Source
-- **Origin**: User-provided HTML reference file (`reference/sample.html`), originally titled *Vesper.ai — Operational AI Infrastructure*.
+- **Origin**: User-provided reference template.
 - **Scope**: Single-page dark hero layout with top navigation, centered value proposition, action buttons, and a bottom 3-item metrics bar.
 
 ## 2. Structure & Grid
@@ -59,16 +59,16 @@
   - Sheen hover effect: CSS transition on `transform: translateX(120%)`.
 
 ## 6. External Assets & Bundle Footprint
-- **Third-Party Video**: `https://d8j0ntlcm91z4.cloudfront.net/...mp4` (External proprietary video asset, removed for licensing and offline autonomy).
+- **Third-Party Video**: Proprietary external video asset (removed for licensing and offline autonomy).
 - **Google Fonts CDN**: `fonts.googleapis.com` (Removed; replaced by bundled `@fontsource/inter` and `@fontsource/instrument-serif`).
 - **Icons**: Inline SVGs (No external icon font).
 
 ## 7. Deviations & Accessibility Fixes
 1. **Desktop Scroll Lock Bug**:
    - *Sample flaw*: Applied `html, body { height: 100%; overflow: hidden }` at `min-width: 901px`, preventing document scrolling.
-   - *Fix*: Removed scroll locking. The hero maintains `min-height: 100svh`, allowing smooth natural scrolling into subsequent product sections.
+   - *Fix*: Removed scroll locking. The hero maintains natural dimensions, allowing smooth scrolling into subsequent product sections.
 2. **External Video Replacement**:
-   - *Fix*: Replaced external CloudFront MP4 with real-time interactive canvas `DotField` (luminous dots on dark background with mouse/scroll/transaction ripple interaction).
+   - *Fix*: Replaced external video with real-time interactive canvas `DotField` (luminous dots on dark background with mouse/scroll/transaction ripple interaction).
 3. **Contrast & Font Weight**:
    - *Sample flaw*: Certain muted texts (`#9a9a9a` on dark backgrounds) require strict compliance with WCAG AA (≥4.5:1) for body text and (≥3:1) for large text.
    - *Fix*: Verified with automated contrast checker; elevated critical text brightness and ensured semaphore badges (ALLOW/ESCALATE/DENY) utilize distinct geometric iconography alongside color.
@@ -76,4 +76,4 @@
    - *Sample flaw*: Native imperative DOM listeners (`animationend`) with class mutations.
    - *Fix*: Encapsulated into declarative React hook `useReveal`, with full `@media (prefers-reduced-motion: reduce)` support disabling transforms and delays.
 5. **Brand & Content Substitution**:
-   - All references to "Vesper.ai" and mock stats (4.2M+, 92%, 180+) replaced with Guardrail Court verified on-chain metrics: JUDGE latency 19.02s mean, 3 protection layers, and 29 verified receipts.
+   - Replaced all placeholder text with Guardrail Court verified on-chain metrics: JUDGE latency 19.02s mean, 3 protection layers, and 29 verified receipts.

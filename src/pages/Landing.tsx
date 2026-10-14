@@ -80,7 +80,7 @@ export const Landing: React.FC = () => {
       </section>
 
       {/* 2. Protection Layers Section */}
-      <section className="landing-section">
+      <section className="landing-section" id="layers">
         <div className="app-container">
           <div className="section-head">
             <h2>Three Protection Layers</h2>
@@ -101,7 +101,7 @@ export const Landing: React.FC = () => {
                 STAGE 02
               </span>
               <h3>Velocity</h3>
-              <p>Fail-closed escalation when spend reaches window cap.</p>
+              <p>Escalates to the owner when spend reaches the window cap.</p>
             </div>
 
             <div className="layer-card">
@@ -116,7 +116,7 @@ export const Landing: React.FC = () => {
       </section>
 
       {/* 3. Honest Protocol Limitations */}
-      <section className="landing-section">
+      <section className="landing-section" id="limits">
         <div className="app-container">
           <div className="section-head">
             <h2>Protocol Limitations</h2>

@@ -1,5 +1,5 @@
 // WCAG 2.1 Relative Luminance & Contrast Ratio Audit Script
-// Mode: Dark Theme (Vesper Aesthetic)
+// Mode: Dark Theme
 
 import fs from 'fs';
 import path from 'path';
@@ -180,6 +180,34 @@ export function runContrastAudit(tokens) {
       bg: tokens['--bg'] || '#000000',
       minRatio: 4.5,
       role: 'PAUSED Status UI (>=4.5:1)',
+    },
+    {
+      name: 'App Control: Policy switching label (#FFFFFF) on page (--bg)',
+      fg: '#FFFFFF',
+      bg: tokens['--bg'] || '#000000',
+      minRatio: 7.0,
+      role: 'Control Label (>=7:1)',
+    },
+    {
+      name: 'App Control: Selected button text (#111111) on active pill (#FFFFFF)',
+      fg: '#111111',
+      bg: '#FFFFFF',
+      minRatio: 7.0,
+      role: 'Selected Control Pill (>=7:1)',
+    },
+    {
+      name: 'App Control: Unselected button text (#FFFFFF) on pill bg (#1E1E1E)',
+      fg: '#FFFFFF',
+      bg: '#1E1E1E',
+      minRatio: 7.0,
+      role: 'Unselected Control Pill (>=7:1)',
+    },
+    {
+      name: 'App Control: Disabled button text (#8A8A8A) on disabled bg (#161616)',
+      fg: '#8A8A8A',
+      bg: '#161616',
+      minRatio: 4.5,
+      role: 'Disabled Control Pill (>=4.5:1)',
     },
   ];
 

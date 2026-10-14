@@ -252,7 +252,7 @@ export const CourtExplorer: React.FC = () => {
     policy && address && policy.owner.toLowerCase() === address.toLowerCase();
 
   return (
-    <div className="court-explorer" style={{ padding: '2rem 0', minHeight: '1100px' }}>
+    <div className="court-explorer" style={{ padding: '0', minHeight: '800px' }}>
       <SectionHeading text="Court Policy Explorer" as="h1" />
 
       {/* Policy Switching Bar */}
@@ -267,7 +267,7 @@ export const CourtExplorer: React.FC = () => {
         }}
       >
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>POLICY:</span>
+          <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#ffffff', letterSpacing: '0.05em' }}>POLICY:</span>
           {['1', '2', '3'].map((pid) => (
             <button
               key={pid}

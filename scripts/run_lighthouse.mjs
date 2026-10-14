@@ -22,15 +22,21 @@ async function waitForServer(url, timeoutMs = 15000) {
 }
 
 async function main() {
-  const viteBin = path.resolve('node_modules/vite/bin/vite.js');
-  const previewProc = spawn(
-    process.execPath,
-    [viteBin, 'preview', '--port', String(PREVIEW_PORT), '--host', '127.0.0.1'],
-    { stdio: 'pipe' }
-  );
+  const isProd = process.argv.includes('--prod');
+  let baseUrl = 'https://guardrail-court-app.vercel.app';
+  let previewProc = null;
+
+  if (!isProd) {
+    const viteBin = path.resolve('node_modules/vite/bin/vite.js');
+    previewProc = spawn(
+      process.execPath,
+      [viteBin, 'preview', '--port', String(PREVIEW_PORT), '--host', '127.0.0.1'],
+      { stdio: 'pipe' }
+    );
+    baseUrl = `http://127.0.0.1:${PREVIEW_PORT}`;
+  }
 
   try {
-    const baseUrl = `http://127.0.0.1:${PREVIEW_PORT}`;
     await waitForServer(baseUrl);
 
     const routes = ['/', '/app'];
@@ -59,14 +65,26 @@ async function main() {
       const report = JSON.parse(fs.readFileSync(outPath, 'utf8'));
       const perf = Math.round((report.categories.performance?.score ?? 0) * 100);
       const a11y = Math.round((report.categories.accessibility?.score ?? 0) * 100);
-      const bp = Math.round((report.categories['best-practices']?.score ?? 0) * 100);
+      const bpCategory = report.categories['best-practices'];
+      const bp = Math.round((bpCategory?.score ?? 0) * 100);
       const cls = Number((report.audits['cumulative-layout-shift']?.numericValue ?? 0).toFixed(4));
       const fcpMs = Math.round(report.audits['first-contentful-paint']?.numericValue ?? 0);
       const lcpMs = Math.round(report.audits['largest-contentful-paint']?.numericValue ?? 0);
       const tbtMs = Math.round(report.audits['total-blocking-time']?.numericValue ?? 0);
 
+      const failingBpAudits = [];
+      if (bpCategory?.auditRefs) {
+        for (const ref of bpCategory.auditRefs) {
+          const audit = report.audits[ref.id];
+          if (audit && audit.score !== null && audit.score < 1) {
+            failingBpAudits.push({ id: ref.id, title: audit.title, score: audit.score, explanation: audit.explanation || audit.description });
+          }
+        }
+      }
+
       summary.push({
         route: r,
+        target: isProd ? 'PRODUCTION' : 'LOCAL',
         performance: perf,
         accessibility: a11y,
         bestPractices: bp,
@@ -74,6 +92,7 @@ async function main() {
         fcpMs,
         lcpMs,
         tbtMs,
+        failingBpAudits,
       });
 
       try {
@@ -81,11 +100,11 @@ async function main() {
       } catch {}
     }
 
-    console.log('=== LIGHTHOUSE PRODUCTION AUDIT (/, /app) ===');
+    console.log(`=== LIGHTHOUSE AUDIT (${isProd ? 'PRODUCTION' : 'LOCAL'}) ===`);
     console.log(JSON.stringify(summary, null, 2));
   } finally {
     try {
-      previewProc.kill();
+      previewProc?.kill();
     } catch {}
   }
 }

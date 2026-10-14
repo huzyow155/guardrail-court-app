@@ -16,6 +16,7 @@ const NavigationBar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
+  const isLanding = pathname === '/';
 
   useEffect(() => {
     setMenuOpen(false);
@@ -56,46 +57,75 @@ const NavigationBar: React.FC = () => {
           </span>
         </Link>
 
-        <nav id="site-nav" className="nav" aria-label="Main">
-          <Link
-            to="/"
-            className={`appear appear--scale ${pathname === '/' ? 'active' : ''}`}
-            style={{ '--d': '.16s' } as React.CSSProperties}
-          >
-            Overview
-          </Link>
-          <Link
-            to="/app"
-            className={`appear appear--soft ${pathname === '/app' ? 'active' : ''}`}
-            style={{ '--d': '.24s' } as React.CSSProperties}
-          >
-            Explorer
-          </Link>
-          <Link
-            to="/app/desk"
-            className={`appear appear--scale ${pathname === '/app/desk' ? 'active' : ''}`}
-            style={{ '--d': '.32s' } as React.CSSProperties}
-          >
-            Desk
-          </Link>
-          <Link
-            to="/app/evidence"
-            className={`appear appear--soft ${pathname.startsWith('/app/evidence') ? 'active' : ''}`}
-            style={{ '--d': '.40s' } as React.CSSProperties}
-          >
-            Evidence
-          </Link>
-          <Link
-            to="/app/new"
-            className={`appear appear--scale ${pathname === '/app/new' ? 'active' : ''}`}
-            style={{ '--d': '.48s' } as React.CSSProperties}
-          >
-            + Policy
-          </Link>
-        </nav>
+        {isLanding ? (
+          /* Landing page minimal header anchors */
+          <nav id="site-nav" className="nav" aria-label="Page navigation">
+            <a
+              href="#layers"
+              className="appear appear--scale"
+              style={{ '--d': '.16s' } as React.CSSProperties}
+            >
+              Layers
+            </a>
+            <a
+              href="#limits"
+              className="appear appear--soft"
+              style={{ '--d': '.24s' } as React.CSSProperties}
+            >
+              Limits
+            </a>
+          </nav>
+        ) : (
+          /* App pages navigation tabs */
+          <nav id="site-nav" className="nav" aria-label="App navigation">
+            <Link
+              to="/"
+              className="appear appear--scale"
+              style={{ '--d': '.12s' } as React.CSSProperties}
+            >
+              Overview
+            </Link>
+            <Link
+              to="/app"
+              className={`appear appear--soft ${pathname === '/app' ? 'active' : ''}`}
+              style={{ '--d': '.18s' } as React.CSSProperties}
+            >
+              Explorer
+            </Link>
+            <Link
+              to="/app/desk"
+              className={`appear appear--scale ${pathname === '/app/desk' ? 'active' : ''}`}
+              style={{ '--d': '.24s' } as React.CSSProperties}
+            >
+              Desk
+            </Link>
+            <Link
+              to="/app/evidence"
+              className={`appear appear--soft ${pathname.startsWith('/app/evidence') ? 'active' : ''}`}
+              style={{ '--d': '.30s' } as React.CSSProperties}
+            >
+              Evidence
+            </Link>
+            <Link
+              to="/app/new"
+              className={`appear appear--scale ${pathname === '/app/new' ? 'active' : ''}`}
+              style={{ '--d': '.36s' } as React.CSSProperties}
+            >
+              + Policy
+            </Link>
+          </nav>
+        )}
 
         <div className="header-cta">
-          {isConnected ? (
+          {isLanding ? (
+            <Link
+              to="/app"
+              className="btn btn-solid appear appear--scale"
+              style={{ '--d': '.34s' } as React.CSSProperties}
+            >
+              Open App
+            </Link>
+          ) : isConnected ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span
                 className="badge font-mono"
@@ -146,9 +176,9 @@ export const App: React.FC = () => {
   return (
     <WalletProvider>
       <BrowserRouter>
-        {/* Full-viewport canvas and atmospheric aurora background */}
-        <DotField />
+        {/* Full-viewport atmospheric aurora (z:0) & DotField canvas (z:1) */}
         <div className="ambient-backdrop" aria-hidden="true" />
+        <DotField />
 
         <div className="app-shell">
           <NavigationBar />
@@ -157,12 +187,54 @@ export const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/evidence" element={<Navigate to="/app/evidence" replace />} />
-              <Route path="/app" element={<CourtExplorer />} />
-              <Route path="/app/desk" element={<Desk />} />
-              <Route path="/app/evidence" element={<Evidence />} />
-              <Route path="/app/policy/:id" element={<CourtExplorer />} />
-              <Route path="/app/decision/:id" element={<DecisionDetail />} />
-              <Route path="/app/new" element={<CreatePolicy />} />
+              <Route
+                path="/app"
+                element={
+                  <div className="app-content-wrap">
+                    <CourtExplorer />
+                  </div>
+                }
+              />
+              <Route
+                path="/app/desk"
+                element={
+                  <div className="app-content-wrap">
+                    <Desk />
+                  </div>
+                }
+              />
+              <Route
+                path="/app/evidence"
+                element={
+                  <div className="app-content-wrap">
+                    <Evidence />
+                  </div>
+                }
+              />
+              <Route
+                path="/app/policy/:id"
+                element={
+                  <div className="app-content-wrap">
+                    <CourtExplorer />
+                  </div>
+                }
+              />
+              <Route
+                path="/app/decision/:id"
+                element={
+                  <div className="app-content-wrap">
+                    <DecisionDetail />
+                  </div>
+                }
+              />
+              <Route
+                path="/app/new"
+                element={
+                  <div className="app-content-wrap">
+                    <CreatePolicy />
+                  </div>
+                }
+              />
             </Routes>
           </main>
 

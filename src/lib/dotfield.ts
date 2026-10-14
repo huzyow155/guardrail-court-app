@@ -171,8 +171,8 @@ export function computeDotFieldFrame(params: DotFieldParams): DotPoint[] {
         0.25 +
         0.5;
 
-      // Elevated architectural field intensity so the dot matrix is clearly visible
-      let fieldIntensity = 3.2 + (noiseVal * 0.65 + waveVal * 0.35) * 14.5;
+      // Elevated architectural field intensity so the dot matrix covers the entire screen
+      let fieldIntensity = 4.8 + (noiseVal * 0.6 + waveVal * 0.4) * 12.0;
       let dotVerdict: RippleVerdict = 'NEUTRAL';
       let rippleBoost = 0;
 
@@ -206,10 +206,10 @@ export function computeDotFieldFrame(params: DotFieldParams): DotPoint[] {
 
       if (fieldIntensity > threshold) {
         const normalized = Math.min(1, Math.max(0, (fieldIntensity - threshold) / 14));
-        // Strictly clamp alpha to [0.10, 0.55] with higher baseline (0.19..0.52) for unmistakable visibility
-        const rawAlpha = 0.19 + normalized * 0.29 + rippleBoost * 0.12;
+        // Bounded alpha [0.10, 0.55] with elevated baseline (0.24..0.55) for crisp visibility
+        const rawAlpha = 0.24 + normalized * 0.28 + rippleBoost * 0.15;
         const alpha = Number(Math.min(0.55, Math.max(0.10, rawAlpha)).toFixed(3));
-        const radius = Number((baseRadius * (0.88 + normalized * 0.28 + rippleBoost * 0.32)).toFixed(2));
+        const radius = Number((baseRadius * (0.95 + normalized * 0.3 + rippleBoost * 0.35)).toFixed(2));
 
         dots.push({
           x: Math.round(x * 10) / 10,
