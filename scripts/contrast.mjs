@@ -209,6 +209,13 @@ export function runContrastAudit(tokens) {
       minRatio: 4.5,
       role: 'Disabled Control Pill (>=4.5:1)',
     },
+    {
+      name: 'Logo suffix: "Court" (--muted / #A3A3A3) on dark header (--bg / #000000)',
+      fg: tokens['--muted'] || '#A3A3A3',
+      bg: tokens['--bg'] || '#000000',
+      minRatio: 7.0,
+      role: 'Brand Logo suffix (>=7:1)',
+    },
   ];
 
   return pairs.map((p) => {

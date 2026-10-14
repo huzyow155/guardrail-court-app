@@ -9,6 +9,7 @@
     "test": "vitest run",
     "lint": "oxlint",
     "count-words": "node scripts/count-words.mjs",
+    "verify:contracts": "node scripts/verify_contract_hash.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

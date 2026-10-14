@@ -37,4 +37,4 @@ throwaway_key*
 *.sln
 *.sw?
 .vercel
-.chrome-headless-profile/
+.chrome-headless*/

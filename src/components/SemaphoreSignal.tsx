@@ -16,23 +16,23 @@ export const SemaphoreSignal: React.FC<SemaphoreSignalProps> = ({
   const norm = verdict.toUpperCase();
 
   let signalClass = 'signal-deny';
-  let armRotation = '90deg'; // Vertical stop
+  let armRotation = 90; // Vertical stop
   let color = 'var(--deny, #F87171)';
   let displayLabel = 'DENY';
 
   if (norm === 'ALLOW' || norm === 'CLEARED') {
     signalClass = 'signal-allow';
-    armRotation = '0deg'; // Horizontal clear
+    armRotation = 0; // Horizontal clear
     color = 'var(--allow, #34D399)';
     displayLabel = 'ALLOW';
   } else if (norm === 'ESCALATE' || norm === 'PENDING' || norm === 'PENDING_OWNER') {
     signalClass = 'signal-escalate';
-    armRotation = '45deg'; // Diagonal attention
+    armRotation = 45; // Diagonal attention
     color = 'var(--escalate, #FBBF24)';
     displayLabel = 'ESCALATE';
   } else if (norm === 'PAUSED') {
     signalClass = 'signal-paused';
-    armRotation = '90deg';
+    armRotation = 90;
     color = 'var(--paused, #94A3B8)';
     displayLabel = 'PAUSED';
   }
@@ -55,7 +55,7 @@ export const SemaphoreSignal: React.FC<SemaphoreSignalProps> = ({
 
         {/* Semaphore Arm */}
         <g
-          transform={`rotate(${armRotation}, 20, 14)`}
+          transform={`rotate(${armRotation} 20 14)`}
           style={{
             transition: 'transform 0.3s cubic-bezier(0.2, 0, 0, 1)',
             transformOrigin: '20px 14px',

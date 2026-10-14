@@ -1,0 +1,167 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.4 [39m[90mE:/guardrail-court-app[39m
+
+ [32m✓[39m src/test/dotfield.test.ts[2m > [22mDotField Pure Deterministic Engine[2m > [22mreturns identical dot list for identical (seed, width, height, timeMs)[32m 23[2mms[22m[39m
+ [32m✓[39m src/test/dotfield.test.ts[2m > [22mDotField Pure Deterministic Engine[2m > [22mproduces different patterns for different seeds[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/dotfield.test.ts[2m > [22mDotField Pure Deterministic Engine[2m > [22mnever exceeds the maximum dot density cap even on 4K viewports[32m 20[2mms[22m[39m
+ [32m✓[39m src/test/dotfield.test.ts[2m > [22mDotField Pure Deterministic Engine[2m > [22mapplies verdict color tokens along expanding ripple rings and disables ripples in reducedMotion[32m 6[2mms[22m[39m
+ [32m✓[39m src/test/dotfield.test.ts[2m > [22mDotField Pure Deterministic Engine[2m > [22mtriggers density step-down only after consecutive frames > 20ms[32m 2[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m src/test/textAnimation.test.tsx[2m > [22mText Animation Pure Logic & Reveal Hook Components[2m > [22mcomputes 40-60ms word-mask stagger delays and 0ms under reducedMotion[32m 9[2mms[22m[39m
+ [32m✓[39m src/test/textAnimation.test.tsx[2m > [22mText Animation Pure Logic & Reveal Hook Components[2m > [22mscrambleStep preserves exact character length (CLS = 0) and settles on exact target[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/textAnimation.test.tsx[2m > [22mText Animation Pure Logic & Reveal Hook Components[2m > [22mcomputeElapsedSeconds computes real elapsed seconds accurately[32m 2[2mms[22m[39m
+ [32m✓[39m src/test/components.test.tsx[2m > [22mComponent Renders & Railway Signals[2m > [22mrenders SemaphoreSignal for ALLOW with green color and 0deg arm[32m 100[2mms[22m[39m
+ [32m✓[39m src/test/components.test.tsx[2m > [22mComponent Renders & Railway Signals[2m > [22mrenders SemaphoreSignal for ESCALATE with amber color and 45deg arm[32m 19[2mms[22m[39m
+ [32m✓[39m src/test/components.test.tsx[2m > [22mComponent Renders & Railway Signals[2m > [22mrenders SemaphoreSignal for DENY with stop red color and 90deg arm[32m 11[2mms[22m[39m
+ [32m✓[39m src/test/components.test.tsx[2m > [22mComponent Renders & Railway Signals[2m > [22mrenders Odometer component without crash[32m 11[2mms[22m[39m
+ [32m✓[39m src/test/components.test.tsx[2m > [22mComponent Renders & Railway Signals[2m > [22mrenders DotField canvas component[32m 15[2mms[22m[39m
+ [32m✓[39m src/test/textAnimation.test.tsx[2m > [22mText Animation Pure Logic & Reveal Hook Components[2m > [22mrenders WordMaskHeading, SectionHeading, and ScrambleText cleanly[32m 88[2mms[22m[39m
+ [32m✓[39m src/test/create_policy_render.test.tsx[2m > [22mCreatePolicy Component Layout[2m > [22mrenders policy creation form prompt and inputs[32m 93[2mms[22m[39m
+ [32m✓[39m src/test/evidence_render.test.tsx[2m > [22mEvidence Component Layout[2m > [22mrenders Evidence page with table headers and filter buttons[32m 291[2mms[22m[39m
+ [32m✓[39m src/test/desk_render.test.tsx[2m > [22mDesk Component Layout[2m > [22mrenders Escalation Desk header and policy selector controls[32m 200[2mms[22m[39m
+ [32m✓[39m src/test/wordcount.test.ts[2m > [22mStrict Word Budget Verification[2m > [22mlanding page visible word count is strictly <= 160 words[32m 21[2mms[22m[39m
+ [32m✓[39m src/test/wordcount.test.ts[2m > [22mStrict Word Budget Verification[2m > [22mall /app pages contain <= 40 static descriptive words each[32m 5[2mms[22m[39m
+ [32m✓[39m src/test/contrast_and_grep.test.ts[2m > [22mWCAG Contrast Tokens & Forbidden Phrase Audit[2m > [22mpasses all 16 WCAG 2.1 contrast pairs from src/index.css[32m 9[2mms[22m[39m
+ [32m✓[39m src/test/contrast_and_grep.test.ts[2m > [22mWCAG Contrast Tokens & Forbidden Phrase Audit[2m > [22mcontains zero occurrences of "rolling", "10 same-category", or "Space Grotesk" in src/[32m 10[2mms[22m[39m
+ [32m✓[39m src/test/receipts.test.ts[2m > [22mReceipt Fixtures & Consensus Validation[2m > [22mvalidates create_policy receipt on Studionet[32m 8[2mms[22m[39m
+ [32m✓[39m src/test/receipts.test.ts[2m > [22mReceipt Fixtures & Consensus Validation[2m > [22mvalidates request_action receipt on Studionet[32m 1[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mcontains valid chain and contract configuration[32m 7[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run a (ALLOW) properties[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run b (DENY) properties[32m 1[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run c (ESCALATE) properties[32m 2[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run d (HARD_LIMIT) properties[32m 2[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run e (VELOCITY) properties[32m 2[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run f (Owner resolve) properties[32m 1[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run g (Prompt injection resistance) properties[32m 1[2mms[22m[39m
+ [32m✓[39m src/test/evidence.test.ts[2m > [22mEvidence Ledger Verification[2m > [22mverifies run h (Pause killswitch) properties[32m 1[2mms[22m[39m
+ [32m✓[39m src/test/contract_hash.test.ts[2m > [22mContract Reference Hash Integrity[2m > [22mmatches genuine GenLayer contract SHA-256 for all reference copies[32m 7[2mms[22m[39m
+ [32m✓[39m src/test/a11y.test.tsx[2m > [22mAccessibility Standards (axe-core on /, /app, /evidence)[2m > [22mLanding (/) has 0 serious or critical axe-core violations[33m 1346[2mms[22m[39m
+[90mstderr[2m | src/test/a11y.test.tsx[2m > [22m[2mAccessibility Standards (axe-core on /, /app, /evidence)[2m > [22m[2mCourtExplorer (/app) has 0 serious or critical axe-core violations
+[22m[39mAn update to ScrambleText inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ScrambleText inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ScrambleText inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to Odometer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to Odometer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to Odometer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to Odometer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/test/sanity.test.ts[2m > [22mSanity Check[2m > [22mvitest test runner works[32m 2[2mms[22m[39m
+[90mstderr[2m | src/test/a11y.test.tsx[2m > [22m[2mAccessibility Standards (axe-core on /, /app, /evidence)[2m > [22m[2mEvidence (/evidence) has 0 serious or critical axe-core violations
+[22m[39mAn update to ScrambleText inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ScrambleText inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ScrambleText inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ScrambleText inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/test/a11y.test.tsx[2m > [22mAccessibility Standards (axe-core on /, /app, /evidence)[2m > [22mCourtExplorer (/app) has 0 serious or critical axe-core violations[33m 909[2mms[22m[39m
+ [32m✓[39m src/test/a11y.test.tsx[2m > [22mAccessibility Standards (axe-core on /, /app, /evidence)[2m > [22mEvidence (/evidence) has 0 serious or critical axe-core violations[33m 445[2mms[22m[39m
+ [32m✓[39m src/test/client.test.ts[2m > [22mContract Interface Parameters[2m > [22mhas correct Studionet parameters[32m 2[2mms[22m[39m
+ [32m✓[39m src/test/client.test.ts[2m > [22mContract Interface Parameters[2m > [22mvalidates string parameter conversion requirement[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m14 passed[39m[22m[90m (14)[39m
+[2m      Tests [22m [1m[32m39 passed[39m[22m[90m (39)[39m
+[2m   Start at [22m 14:42:25
+[2m   Duration [22m 8.38s[2m (environment 69%, setup 11%, import 10%, tests 9%, worker 1%, transform 1%)[22m
+
+[2mEnvironment [22m [33mjsdom was created 14 times[39m[2m · 29.90s total, 69% of tracked time[22m
+[2m            [22m [2mcreate it once per worker with [22m[33mpool: 'vmThreads'[39m[2m (keeps per-file isolation) or [22m[33misolate: false[39m[2m (shares it across files)[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-environments[22m
+

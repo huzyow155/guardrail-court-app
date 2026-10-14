@@ -475,6 +475,46 @@ h1 {
   color: #ffffff;
 }
 
+.hero-copy h1 {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-copy h1::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 115%;
+  height: 130%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.72) 48%, transparent 80%);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(16px);
+}
+
+.section-heading-wrap {
+  position: relative;
+  display: inline-block;
+  z-index: 2;
+  margin-bottom: 1.5rem;
+}
+
+.section-heading-wrap::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 125%;
+  height: 140%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.70) 50%, transparent 80%);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(14px);
+}
+
 h1 em {
   font-family: var(--font-serif);
   font-style: italic;

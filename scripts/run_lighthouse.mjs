@@ -82,6 +82,11 @@ async function main() {
         }
       }
 
+      const layoutShiftElements = (report.audits['layout-shift-elements']?.details?.items || []).map(item => ({
+        node: item.node?.snippet || item.node?.selector,
+        score: item.score,
+      }));
+
       summary.push({
         route: r,
         target: isProd ? 'PRODUCTION' : 'LOCAL',
@@ -92,6 +97,7 @@ async function main() {
         fcpMs,
         lcpMs,
         tbtMs,
+        layoutShiftElements,
         failingBpAudits,
       });
 

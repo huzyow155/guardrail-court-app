@@ -1,0 +1,2 @@
+# Ensure contract reference copies retain exact Unix line endings for SHA-256 integrity
+contracts/*.py text eol=lf
