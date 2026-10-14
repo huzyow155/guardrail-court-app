@@ -44,13 +44,16 @@ const NavigationBar: React.FC = () => {
           style={{ '--d': '.08s' } as React.CSSProperties}
           onClick={(e) => triggerDotFieldRipple({ element: e.currentTarget, verdict: 'NEUTRAL' })}
         >
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <g transform="rotate(-30 12 12)">
-              <circle cx="7.3" cy="3.2" r="1.45" />
-              <rect x="5.5" y="4.7" width="3.6" height="14.6" rx="1.8" />
-              <rect x="14.9" y="4.7" width="3.6" height="14.6" rx="1.8" />
-              <circle cx="16.7" cy="20.8" r="1.45" />
+          <svg viewBox="0 0 512 512" aria-hidden="true">
+            <rect width="512" height="512" rx="112" fill="#0B0B0F" />
+            <rect x="1" y="1" width="510" height="510" rx="111" fill="none" stroke="#2A2D3A" strokeWidth="16" />
+            <g strokeLinecap="round" strokeWidth="36" fill="none">
+              <line x1="170" y1="350" x2="170" y2="118" stroke="#34D399" />
+              <line x1="170" y1="350" x2="334" y2="186" stroke="#FBBF24" />
+              <line x1="170" y1="350" x2="402" y2="350" stroke="#F87171" />
+              <line x1="402" y1="312" x2="402" y2="388" stroke="#F87171" />
             </g>
+            <circle cx="170" cy="350" r="38" fill="#0B0B0F" stroke="#E8EAF2" strokeWidth="20" />
           </svg>
           <span>
             Guardrail <span className="logo-suffix">Court</span>

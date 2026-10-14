@@ -258,11 +258,17 @@ async function main() {
 
     cdp.close();
 
+    const MIN_FPS = 45;
+    const fpsPassed = fps.measuredFps >= MIN_FPS;
+
     if (!allPassed) {
       console.error('\nERROR: Dotfield coverage failed minimum threshold!');
       process.exit(1);
+    } else if (!fpsPassed) {
+      console.error(`\nERROR: Measured scroll FPS (${fps.measuredFps} fps) is below minimum threshold (${MIN_FPS} fps)!`);
+      process.exit(1);
     } else {
-      console.log('\nPASSED: Dotfield covers >= 14/16 grid cells with smooth 60fps scrolling.');
+      console.log(`\nPASSED: Dotfield covers >= 14/16 grid cells with measured ${fps.measuredFps} fps (threshold >= ${MIN_FPS} fps).`);
     }
   } finally {
     try {

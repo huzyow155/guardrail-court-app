@@ -18,10 +18,10 @@ function getAllFiles(dir: string, acc: string[] = []): string[] {
 }
 
 describe('WCAG Contrast Tokens & Forbidden Phrase Audit', () => {
-  it('passes all 16 WCAG 2.1 contrast pairs from src/index.css', () => {
+  it('passes all 21 WCAG 2.1 contrast pairs from src/index.css', () => {
     const tokens = loadTokensFromCss(path.resolve('src/index.css'));
     const results = runContrastAudit(tokens);
-    expect(results.length).toBeGreaterThanOrEqual(15);
+    expect(results.length).toBe(21);
     for (const r of results) {
       expect(r.pass, `${r.name} had ratio ${r.ratio}:1 < ${r.minRatio}:1`).toBe(true);
     }

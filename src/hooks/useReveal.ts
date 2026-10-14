@@ -118,8 +118,8 @@ export const SectionHeading: React.FC<{
 
   return React.createElement(
     'div',
-    { ref, className: 'section-heading-wrap', style },
-    React.createElement(as, { style: as === 'h1' ? { fontSize: '1.85rem' } : undefined }, text),
+    { ref, className: 'section-heading-wrap', style: { minHeight: as === 'h1' ? '46px' : '36px', ...style } },
+    React.createElement(as, { style: as === 'h1' ? { fontSize: '1.85rem', margin: 0, lineHeight: 1.2 } : { margin: 0 } }, text),
     React.createElement('span', {
       className: `section-heading-underline ${revealed ? '' : 'is-hidden'}`.trim(),
       'aria-hidden': 'true',

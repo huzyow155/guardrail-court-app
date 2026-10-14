@@ -334,7 +334,7 @@ export const CourtExplorer: React.FC = () => {
               />
             </div>
 
-            <div style={{ marginBottom: '1.25rem', fontStyle: 'italic', fontSize: '0.95rem' }}>
+            <div style={{ marginBottom: '1.25rem', fontStyle: 'italic', fontSize: '0.95rem', minHeight: '44px', lineHeight: '1.45' }}>
               "{policy.text}"
             </div>
 
