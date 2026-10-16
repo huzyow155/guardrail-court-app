@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const CHROME_PATH = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PREVIEW_PORT = 4173;
-const CDP_PORT = 9223;
+const CDP_PORT = 9224;
 const SCREENSHOT_DIR = path.resolve('docs/screenshots');
 
 fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
@@ -53,7 +53,7 @@ class CDPClient {
   }
 }
 
-async function waitForServer(url, timeoutMs = 15000) {
+async function waitForServer(url, timeoutMs = 20000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
@@ -74,8 +74,17 @@ async function captureScreenshot(cdp, filepath) {
   console.log(`Saved screenshot: ${filepath}`);
 }
 
+async function setViewport(cdp, width, height) {
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width,
+    height,
+    deviceScaleFactor: 1,
+    mobile: width < 768,
+  });
+}
+
 async function main() {
-  console.log('=== STARTING BROWSER E2E WRITE FLOW SCREENSHOT CAPTURE ===');
+  console.log('=== STARTING HEADLESS BROWSER EIP-1193 FLOW & MULTI-VIEWPORT SCREENSHOTS ===');
   const viteBin = path.resolve('node_modules/vite/bin/vite.js');
   const previewProc = spawn(process.execPath, [viteBin, 'preview', '--port', String(PREVIEW_PORT), '--host', '127.0.0.1'], {
     stdio: 'ignore',
@@ -115,8 +124,8 @@ async function main() {
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
 
-    // Inject mock EIP-1193 provider with owner/agent address
-    const mockAddr = '0xa359c620Ca5c539a473cfb983d9eD4333c64FA24';
+    // Inject mock EIP-1193 provider with test burner address
+    const mockAddr = '0xd904a5C23F53eF153Bcd059914e3E25D2F828f92';
     const providerScript = `
       window.ethereum = {
         isMetaMask: true,
@@ -132,7 +141,7 @@ async function main() {
             return null;
           }
           if (method === 'eth_sendTransaction') {
-            return '0xbc909da498aa2c9c14bffb268720bf1f234d5d2d7cf1dcea5e42ed2b54198c9b';
+            return '0x9999999999999999999999999999999999999999999999999999999999999999';
           }
           return null;
         },
@@ -142,51 +151,45 @@ async function main() {
     `;
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: providerScript });
 
-    // Set viewport: 1440 x 900
-    await cdp.send('Emulation.setDeviceMetricsOverride', {
-      width: 1440,
-      height: 900,
-      deviceScaleFactor: 1,
-      mobile: false,
-    });
+    const viewports = [
+      { name: '1440', width: 1440, height: 900 },
+      { name: '768', width: 768, height: 1024 },
+      { name: '375', width: 375, height: 812 },
+    ];
 
-    // 1. /app/new screenshot
-    console.log('Navigating to /app/new...');
-    await cdp.send('Page.navigate', { url: `${baseUrl}/app/new` });
-    await sleep(2000);
-    // Connect wallet in UI if button present
-    await cdp.send('Runtime.evaluate', {
-      expression: `(() => {
-        const btns = Array.from(document.querySelectorAll('button'));
-        const connectBtn = btns.find(b => b.textContent.includes('Connect Wallet'));
-        if (connectBtn) connectBtn.click();
-      })()`,
-    });
-    await sleep(1000);
-    await captureScreenshot(cdp, path.join(SCREENSHOT_DIR, 'write-01-new-policy.png'));
+    const pages = [
+      { path: '/app', prefix: 'app-explorer' },
+      { path: '/app/request', prefix: 'app-request' },
+      { path: '/app/vault', prefix: 'app-vault' },
+      { path: '/app/desk', prefix: 'app-desk' },
+      { path: '/app/new', prefix: 'app-new' },
+    ];
 
-    // 2. /app/request screenshot
-    console.log('Navigating to /app/request...');
-    await cdp.send('Page.navigate', { url: `${baseUrl}/app/request` });
-    await sleep(2000);
-    // Select policy 7
-    await cdp.send('Runtime.evaluate', {
-      expression: `(() => {
-        const btns = Array.from(document.querySelectorAll('button'));
-        const p7 = btns.find(b => b.textContent.trim() === '#5' || b.textContent.trim() === '#1');
-        if (p7) p7.click();
-      })()`,
-    });
-    await sleep(1500);
-    await captureScreenshot(cdp, path.join(SCREENSHOT_DIR, 'write-02-request-action.png'));
+    for (const p of pages) {
+      console.log(`\nNavigating to ${p.path}...`);
+      await setViewport(cdp, 1440, 900);
+      await cdp.send('Page.navigate', { url: `${baseUrl}${p.path}` });
+      await sleep(1500);
 
-    // 3. /app/desk screenshot
-    console.log('Navigating to /app/desk...');
-    await cdp.send('Page.navigate', { url: `${baseUrl}/app/desk` });
-    await sleep(2000);
-    await captureScreenshot(cdp, path.join(SCREENSHOT_DIR, 'write-03-desk-resolve.png'));
+      // Connect wallet if button is visible
+      await cdp.send('Runtime.evaluate', {
+        expression: `(() => {
+          const btns = Array.from(document.querySelectorAll('button'));
+          const connectBtn = btns.find(b => b.textContent && b.textContent.includes('Connect Wallet'));
+          if (connectBtn) connectBtn.click();
+        })()`,
+      });
+      await sleep(500);
 
-    console.log('=== BROWSER E2E WRITE FLOW SCREENSHOTS COMPLETE ===');
+      for (const vp of viewports) {
+        await setViewport(cdp, vp.width, vp.height);
+        await sleep(500);
+        const filename = `${p.prefix}-${vp.name}.png`;
+        await captureScreenshot(cdp, path.join(SCREENSHOT_DIR, filename));
+      }
+    }
+
+    console.log('=== ALL BROWSER E2E SCREENSHOTS CAPTURED SUCCESSFULLY ===');
   } finally {
     cdp?.close();
     try {
@@ -199,6 +202,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('Browser E2E flow failure:', err);
+  console.error('Browser E2E flow error:', err);
   process.exit(1);
 });
