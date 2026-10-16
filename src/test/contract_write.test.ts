@@ -4,19 +4,19 @@ import {
   setPaused,
   requestAction,
   resolveEscalation,
+  vaultExecute,
   validateReceipt,
 } from '../services/contractWrite';
 import {
   CONTRACT_USER_ERRORS,
   mapContractError,
   extractErrorMessageFromPayload,
-  ContractExecutionError,
 } from '../lib/errors';
 
 describe('Error Mapping & Decoding', () => {
-  it('maps all 16 canonical contract UserError strings to friendly messages', () => {
+  it('maps all 30 canonical contract UserError strings to friendly messages', () => {
     const errorKeys = Object.keys(CONTRACT_USER_ERRORS);
-    expect(errorKeys.length).toBe(16);
+    expect(errorKeys.length).toBe(30);
     errorKeys.forEach((err) => {
       const mapped = mapContractError(err);
       expect(mapped).toBeTruthy();
@@ -28,11 +28,11 @@ describe('Error Mapping & Decoding', () => {
     // Plain text
     expect(extractErrorMessageFromPayload('policy is paused')).toContain('policy is paused');
 
-    // Base64 encoded 'agent not authorized' -> 'YWdlbnQgbm90IGF1dGhvcml6ZWQ='
+    // Base64 encoded 'policy is paused'
     const b64 = (globalThis as any).Buffer
-      ? (globalThis as any).Buffer.from('agent not authorized').toString('base64')
-      : btoa('agent not authorized');
-    expect(extractErrorMessageFromPayload(b64)).toContain('agent not authorized');
+      ? (globalThis as any).Buffer.from('policy is paused').toString('base64')
+      : btoa('policy is paused');
+    expect(extractErrorMessageFromPayload(b64)).toContain('policy is paused');
   });
 });
 
@@ -69,7 +69,7 @@ describe('Receipt Validation', () => {
           {
             execution_result: 'ERROR',
             result: {
-              payload: 'amount exceeds maximum policy limit',
+              payload: 'clearance does not match this action',
             },
           },
         ],
@@ -78,11 +78,11 @@ describe('Receipt Validation', () => {
 
     const res = validateReceipt(mockReceipt);
     expect(res.isSuccess).toBe(false);
-    expect(res.rawError).toContain('amount exceeds maximum policy limit');
+    expect(res.rawError).toContain('clearance does not match this action');
   });
 });
 
-describe('Contract Write Parameter Validation', () => {
+describe('Contract Write Parameter Validation (V2)', () => {
   const mockClient: any = {
     account: '0x1111111111111111111111111111111111111111',
     writeContract: vi.fn().mockResolvedValue('0xabcdef1234567890'),
@@ -100,21 +100,27 @@ describe('Contract Write Parameter Validation', () => {
     }),
   };
 
-  it('validates createPolicy input arguments', async () => {
+  it('validates createPolicy input arguments including allowlists', async () => {
     await expect(
-      createPolicy('invalid-addr', 'Valid long enough text policy...', '100', '400', { client: mockClient })
-    ).rejects.toThrow(/agent must be a valid 42-character hex address/i);
+      createPolicy('invalid-addr', 'Valid long enough text policy...', '100', '400', ['0x1111111111111111111111111111111111111111'], ['USDC'], { client: mockClient })
+    ).rejects.toThrow(/agent must be a valid address/i);
 
     await expect(
-      createPolicy('0x1234567890123456789012345678901234567890', 'short', '100', '400', { client: mockClient })
+      createPolicy('0x1234567890123456789012345678901234567890', 'short', '100', '400', ['0x1111111111111111111111111111111111111111'], ['USDC'], { client: mockClient })
     ).rejects.toThrow(/between 30 and 1200/i);
 
-    // Valid call verifies args passed as strings
+    await expect(
+      createPolicy('0x1234567890123456789012345678901234567890', 'The agent may buy cloud compute. Prohibit gifts.', '100', '50', ['0x1111111111111111111111111111111111111111'], ['USDC'], { client: mockClient })
+    ).rejects.toThrow(/window_cap must be >= max_amount/i);
+
+    // Valid call verifies JSON stringified allowlists passed
     const res = await createPolicy(
       '0x1234567890123456789012345678901234567890',
       'The agent may buy cloud compute. Prohibit gifts.',
       '100',
       '400',
+      ['0x1111111111111111111111111111111111111111'],
+      ['USDC'],
       { client: mockClient }
     );
     expect(res.returnValue).toBe('7');
@@ -126,28 +132,65 @@ describe('Contract Write Parameter Validation', () => {
           'The agent may buy cloud compute. Prohibit gifts.',
           '100',
           '400',
+          JSON.stringify(['0x1111111111111111111111111111111111111111']),
+          JSON.stringify(['USDC']),
         ],
       })
     );
   });
 
-  it('validates requestAction category and amount regex', async () => {
+  it('validates requestAction 7 parameters', async () => {
     await expect(
-      requestAction('1', 'invalid CATEGORY!', '50', 'Valid description', { client: mockClient })
+      requestAction('1', 'invalid CATEGORY!', '0x1111111111111111111111111111111111111111', 'USDC', '50', 'a'.repeat(64), 'Valid justification', { client: mockClient })
     ).rejects.toThrow(/invalid category format/i);
 
     await expect(
-      requestAction('1', 'cloud_ops', '-50', 'Valid description', { client: mockClient })
+      requestAction('1', 'cloud_ops', 'invalid-recipient', 'USDC', '50', 'a'.repeat(64), 'Valid justification', { client: mockClient })
+    ).rejects.toThrow(/recipient must be a valid address/i);
+
+    await expect(
+      requestAction('1', 'cloud_ops', '0x1111111111111111111111111111111111111111', 'USDC', '-50', 'a'.repeat(64), 'Valid justification', { client: mockClient })
     ).rejects.toThrow(/amount must be a valid non-negative integer string/i);
 
     await expect(
-      requestAction('1', 'cloud_ops', '50', 'too', { client: mockClient })
-    ).rejects.toThrow(/description length/i);
+      requestAction('1', 'cloud_ops', '0x1111111111111111111111111111111111111111', 'USDC', '50', 'invalid-hash', 'Valid justification', { client: mockClient })
+    ).rejects.toThrow(/calldata_hash must be a 64-character hex string/i);
+
+    await expect(
+      requestAction('1', 'cloud_ops', '0x1111111111111111111111111111111111111111', 'USDC', '50', 'a'.repeat(64), 'too', { client: mockClient })
+    ).rejects.toThrow(/justification length/i);
   });
 
   it('validates resolveEscalation outcome', async () => {
     await expect(
       resolveEscalation('1', 'MAYBE' as any, { client: mockClient })
     ).rejects.toThrow(/outcome must be ALLOW or DENY/i);
+  });
+
+  it('validates vaultExecute invocation targeting vault address', async () => {
+    await vaultExecute(
+      '1',
+      '1',
+      'server_ops',
+      '0x1111111111111111111111111111111111111111',
+      'USDC',
+      '40',
+      'a'.repeat(64),
+      { client: mockClient }
+    );
+    expect(mockClient.writeContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        functionName: 'execute',
+        args: [
+          '1',
+          '1',
+          'server_ops',
+          '0x1111111111111111111111111111111111111111',
+          'USDC',
+          '40',
+          'a'.repeat(64),
+        ],
+      })
+    );
   });
 });

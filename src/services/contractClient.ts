@@ -1,6 +1,16 @@
 import { createClient, chains } from 'genlayer-js';
+import {
+  DEPLOYMENTS,
+  COURT_V2_ADDRESS,
+  VAULT_V2_ADDRESS,
+  ACTIVE_COURT_ADDRESS,
+  ACTIVE_VAULT_ADDRESS,
+} from '../config/deployments';
 
-export const COURT_ADDRESS = '0x6C553Ba27a768D71b570a106D9D2e13553b4103c';
+export { DEPLOYMENTS, COURT_V2_ADDRESS, VAULT_V2_ADDRESS, ACTIVE_COURT_ADDRESS, ACTIVE_VAULT_ADDRESS };
+
+export const COURT_ADDRESS = ACTIVE_COURT_ADDRESS;
+export const VAULT_ADDRESS = ACTIVE_VAULT_ADDRESS;
 export const STUDIONET_CHAIN_ID = 61999;
 export const RPC_URL = 'https://studio.genlayer.com/api';
 
@@ -20,6 +30,8 @@ export interface PolicyRecord {
   policy_sha: string;
   max_amount: string;
   window_cap: string;
+  allowed_recipients: string[];
+  allowed_assets: string[];
   paused: boolean;
   seq: string;
 }
@@ -28,14 +40,18 @@ export interface DecisionRecord {
   schema_version: string;
   id: string;
   policy_id: string;
+  seq: string;
   category: string;
+  recipient: string;
+  asset: string;
   amount: string;
-  description: string;
+  calldata_hash: string;
+  action_hash: string;
+  justification: string;
   verdict: 'ALLOW' | 'DENY' | 'ESCALATE';
-  source: 'HARD_LIMIT' | 'VELOCITY' | 'JUDGE';
+  source: 'HARD_LIMIT' | 'RECIPIENT_GUARD' | 'ASSET_GUARD' | 'VELOCITY' | 'JUDGE';
   status: 'CLEARED' | 'DENIED' | 'PENDING_OWNER';
   resolved_by_owner: boolean;
-  seq: string;
 }
 
 export interface PolicyStats {
@@ -51,9 +67,21 @@ export interface PolicyStats {
   };
   sources: {
     HARD_LIMIT: number;
+    RECIPIENT_GUARD: number;
+    ASSET_GUARD: number;
     VELOCITY: number;
     JUDGE: number;
   };
+}
+
+export interface VaultExecutionRecord {
+  schema_version: string;
+  decision_id: string;
+  recipient: string;
+  asset: string;
+  amount: string;
+  calldata_hash: string;
+  caller: string;
 }
 
 /**
@@ -117,13 +145,115 @@ export async function getPendingEscalations(policyId: string): Promise<DecisionR
 }
 
 /**
- * Check if decision is cleared
+ * Read latest decision ID for policy
  */
-export async function isCleared(decisionId: string): Promise<boolean> {
+export async function latestDecisionId(policyId: string): Promise<string> {
   const raw = await publicClient.readContract({
     address: COURT_ADDRESS,
-    functionName: 'is_cleared',
+    functionName: 'latest_decision_id',
+    args: [String(policyId)],
+  });
+  return String(raw || '');
+}
+
+/**
+ * List policies by owner
+ */
+export async function listPoliciesByOwner(owner: string, limit: number = 10): Promise<PolicyRecord[]> {
+  const raw = await publicClient.readContract({
+    address: COURT_ADDRESS,
+    functionName: 'list_policies_by_owner',
+    args: [String(owner), limit],
+  });
+  return (typeof raw === 'string' ? JSON.parse(raw) : raw) as PolicyRecord[];
+}
+
+/**
+ * List policies by agent
+ */
+export async function listPoliciesByAgent(agent: string, limit: number = 10): Promise<PolicyRecord[]> {
+  const raw = await publicClient.readContract({
+    address: COURT_ADDRESS,
+    functionName: 'list_policies_by_agent',
+    args: [String(agent), limit],
+  });
+  return (typeof raw === 'string' ? JSON.parse(raw) : raw) as PolicyRecord[];
+}
+
+/**
+ * Compute action hash on-chain
+ */
+export async function getActionHash(
+  policyId: string,
+  category: string,
+  recipient: string,
+  asset: string,
+  amount: string,
+  calldataHash: string
+): Promise<string> {
+  const raw = await publicClient.readContract({
+    address: COURT_ADDRESS,
+    functionName: 'get_action_hash',
+    args: [
+      String(policyId),
+      String(category),
+      String(recipient),
+      String(asset),
+      String(amount),
+      String(calldataHash),
+    ],
+  });
+  return String(raw || '');
+}
+
+/**
+ * Check if decision is cleared for specific parameters (V2 action-bound clearance check)
+ */
+export async function isClearedFor(
+  decisionId: string,
+  policyId: string,
+  category: string,
+  recipient: string,
+  asset: string,
+  amount: string,
+  calldataHash: string
+): Promise<boolean> {
+  const raw = await publicClient.readContract({
+    address: COURT_ADDRESS,
+    functionName: 'is_cleared_for',
+    args: [
+      String(decisionId),
+      String(policyId),
+      String(category),
+      String(recipient),
+      String(asset),
+      String(amount),
+      String(calldataHash),
+    ],
+  });
+  return Boolean(raw);
+}
+
+/**
+ * Check if decision has been executed on GuardedVaultV2
+ */
+export async function isVaultExecuted(decisionId: string): Promise<boolean> {
+  const raw = await publicClient.readContract({
+    address: VAULT_ADDRESS,
+    functionName: 'is_executed',
     args: [String(decisionId)],
   });
   return Boolean(raw);
+}
+
+/**
+ * Read execution details from GuardedVaultV2
+ */
+export async function getVaultExecution(decisionId: string): Promise<VaultExecutionRecord> {
+  const raw = await publicClient.readContract({
+    address: VAULT_ADDRESS,
+    functionName: 'get_execution',
+    args: [String(decisionId)],
+  });
+  return (typeof raw === 'string' ? JSON.parse(raw) : raw) as VaultExecutionRecord;
 }

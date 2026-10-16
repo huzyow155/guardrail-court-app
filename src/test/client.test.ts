@@ -7,7 +7,7 @@ import {
 
 describe('Contract Interface Parameters', () => {
   it('has correct Studionet parameters', () => {
-    expect(COURT_ADDRESS).toBe('0x6C553Ba27a768D71b570a106D9D2e13553b4103c');
+    expect(COURT_ADDRESS).toBe('0xF5797dDB4ce419ec50351BF9B48D5C24D5330d7b');
     expect(STUDIONET_CHAIN_ID).toBe(61999);
     expect(RPC_URL).toBe('https://studio.genlayer.com/api');
   });

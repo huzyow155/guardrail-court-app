@@ -189,5 +189,11 @@ export const RealTxTimer: React.FC<{ active: boolean }> = ({ active }) => {
   }, [active]);
 
   if (!active) return null;
-  return React.createElement('span', { className: 'font-mono' }, `(${elapsedSec.toFixed(1)}s)`);
+  return React.createElement(
+    'span',
+    { className: 'font-mono' },
+    elapsedSec > 60
+      ? `(${elapsedSec.toFixed(1)}s — validators are still deciding)`
+      : `(${elapsedSec.toFixed(1)}s)`
+  );
 };

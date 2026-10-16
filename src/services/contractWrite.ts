@@ -1,5 +1,5 @@
 import { createClient, chains } from 'genlayer-js';
-import { COURT_ADDRESS, STUDIONET_CHAIN_ID } from './contractClient';
+import { COURT_ADDRESS, VAULT_ADDRESS, STUDIONET_CHAIN_ID } from './contractClient';
 import { ContractExecutionError } from '../lib/errors';
 
 export type GenLayerWriteClient = ReturnType<typeof createClient>;
@@ -9,6 +9,7 @@ export interface WriteTxOptions {
   provider?: any;
   account?: any;
   onHash?: (hash: string) => void;
+  targetAddress?: string;
 }
 
 export interface WriteTxResult<T = string> {
@@ -165,10 +166,11 @@ export async function executeWriteContract<T = any>(
   options?: WriteTxOptions
 ): Promise<WriteTxResult<T>> {
   const { client, accountAddress } = await getWriteClient(options);
+  const target = (options?.targetAddress || COURT_ADDRESS) as `0x${string}`;
   const startTime = Date.now();
 
   const txHash = await client.writeContract({
-    address: COURT_ADDRESS as `0x${string}`,
+    address: target,
     functionName,
     args,
     value: 0n,
@@ -181,8 +183,8 @@ export async function executeWriteContract<T = any>(
 
   const receipt = await client.waitForTransactionReceipt({
     hash: txHash,
-    interval: 2000,
-    retries: 45,
+    interval: 3000,
+    retries: 120,
   });
 
   const latencySec = Number(((Date.now() - startTime) / 1000).toFixed(2));
@@ -201,18 +203,20 @@ export async function executeWriteContract<T = any>(
 }
 
 /**
- * 1. create_policy(agent: str, text: str, max_amount: str, window_cap: str) -> str
+ * 1. create_policy(agent: str, text: str, max_amount: str, window_cap: str, allowed_recipients: str, allowed_assets: str) -> str
  */
 export async function createPolicy(
   agent: string,
   text: string,
   maxAmount: string,
   windowCap: string,
+  allowedRecipients: string[] | string,
+  allowedAssets: string[] | string,
   options?: WriteTxOptions
 ): Promise<WriteTxResult<string>> {
   const cleanAgent = agent.trim();
   if (!/^0x[a-fA-F0-9]{40}$/.test(cleanAgent)) {
-    throw new Error('agent must be a valid 42-character hex address');
+    throw new Error('agent must be a valid address');
   }
   const cleanText = text.trim();
   if (cleanText.length < 30 || cleanText.length > 1200) {
@@ -222,14 +226,58 @@ export async function createPolicy(
   if (!/^\d{1,18}$/.test(cleanMax)) {
     throw new Error('max_amount must be a valid non-negative integer string');
   }
+  if (BigInt(cleanMax) < 1n) {
+    throw new Error('max_amount must be >= 1');
+  }
   const cleanWindow = windowCap.trim();
   if (!/^\d{1,18}$/.test(cleanWindow)) {
     throw new Error('window_cap must be a valid non-negative integer string');
   }
+  if (BigInt(cleanWindow) < BigInt(cleanMax)) {
+    throw new Error('window_cap must be >= max_amount');
+  }
 
-  return executeWriteContract(
+  // Parse recipients
+  let recipientsList: string[] = [];
+  if (Array.isArray(allowedRecipients)) {
+    recipientsList = allowedRecipients.map((r) => r.trim().toLowerCase());
+  } else {
+    try {
+      recipientsList = JSON.parse(allowedRecipients);
+    } catch {
+      recipientsList = allowedRecipients.split(',').map((r) => r.trim().toLowerCase()).filter(Boolean);
+    }
+  }
+  if (recipientsList.length < 1 || recipientsList.length > 10) {
+    throw new Error('allowed_recipients must contain between 1 and 10 items');
+  }
+  for (const r of recipientsList) {
+    if (!/^0x[a-fA-F0-9]{40}$/.test(r)) {
+      throw new Error('invalid address in allowed_recipients');
+    }
+  }
+
+  // Parse assets
+  let assetsList: string[] = [];
+  if (Array.isArray(allowedAssets)) {
+    assetsList = allowedAssets.map((a) => a.trim());
+  } else {
+    try {
+      assetsList = JSON.parse(allowedAssets);
+    } catch {
+      assetsList = allowedAssets.split(',').map((a) => a.trim()).filter(Boolean);
+    }
+  }
+  if (assetsList.length < 1 || assetsList.length > 10) {
+    throw new Error('allowed_assets must contain between 1 and 10 items');
+  }
+
+  const jsonRecipients = JSON.stringify(recipientsList);
+  const jsonAssets = JSON.stringify(assetsList);
+
+  return executeWriteContract<string>(
     'create_policy',
-    [cleanAgent, cleanText, cleanMax, cleanWindow],
+    [cleanAgent, cleanText, cleanMax, cleanWindow, jsonRecipients, jsonAssets],
     options
   );
 }
@@ -254,13 +302,16 @@ export async function setPaused(
 }
 
 /**
- * 3. request_action(policy_id: str, category: str, amount: str, description: str) -> str
+ * 3. request_action(policy_id: str, category: str, recipient: str, asset: str, amount: str, calldata_hash: str, justification: str) -> str
  */
 export async function requestAction(
   policyId: string,
   category: string,
+  recipient: string,
+  asset: string,
   amount: string,
-  description: string,
+  calldataHash: string,
+  justification: string,
   options?: WriteTxOptions
 ): Promise<WriteTxResult<string>> {
   const cleanId = String(policyId).trim();
@@ -269,20 +320,35 @@ export async function requestAction(
   }
   const cleanCategory = category.trim();
   if (!/^[a-z0-9_-]{1,30}$/.test(cleanCategory)) {
-    throw new Error('invalid category format (1-30 characters, a-z0-9_-)');
+    throw new Error('invalid category format');
+  }
+  const cleanRecipient = recipient.trim();
+  if (!/^0x[a-fA-F0-9]{40}$/.test(cleanRecipient)) {
+    throw new Error('recipient must be a valid address');
+  }
+  const cleanAsset = asset.trim();
+  if (!cleanAsset) {
+    throw new Error('invalid asset format');
   }
   const cleanAmount = amount.trim();
   if (!/^\d{1,18}$/.test(cleanAmount)) {
     throw new Error('amount must be a valid non-negative integer string');
   }
-  const cleanDesc = description.trim();
-  if (cleanDesc.length < 5 || cleanDesc.length > 600) {
-    throw new Error('description length must be between 5 and 600 characters');
+  if (BigInt(cleanAmount) < 1n) {
+    throw new Error('amount must be >= 1');
+  }
+  const cleanCdh = calldataHash.trim();
+  if (!/^[a-fA-F0-9]{64}$/.test(cleanCdh)) {
+    throw new Error('calldata_hash must be a 64-character hex string');
+  }
+  const cleanJustification = justification.trim();
+  if (cleanJustification.length < 5 || cleanJustification.length > 600) {
+    throw new Error('justification length must be between 5 and 600 characters without control chars');
   }
 
   return executeWriteContract<string>(
     'request_action',
-    [cleanId, cleanCategory, cleanAmount, cleanDesc],
+    [cleanId, cleanCategory, cleanRecipient, cleanAsset, cleanAmount, cleanCdh, cleanJustification],
     options
   );
 }
@@ -308,5 +374,36 @@ export async function resolveEscalation(
     'resolve_escalation',
     [cleanId, normOutcome],
     options
+  );
+}
+
+/**
+ * 5. vaultExecute(decision_id: str, policy_id: str, category: str, recipient: str, asset: str, amount: str, calldata_hash: str) -> str
+ */
+export async function vaultExecute(
+  decisionId: string,
+  policyId: string,
+  category: string,
+  recipient: string,
+  asset: string,
+  amount: string,
+  calldataHash: string,
+  options?: WriteTxOptions
+): Promise<WriteTxResult<string>> {
+  const cleanDid = String(decisionId).trim();
+  const cleanPid = String(policyId).trim();
+  const cleanCategory = String(category).trim();
+  const cleanRecipient = String(recipient).trim();
+  const cleanAsset = String(asset).trim();
+  const cleanAmount = String(amount).trim();
+  const cleanCdh = String(calldataHash).trim();
+
+  return executeWriteContract<string>(
+    'execute',
+    [cleanDid, cleanPid, cleanCategory, cleanRecipient, cleanAsset, cleanAmount, cleanCdh],
+    {
+      ...options,
+      targetAddress: VAULT_ADDRESS,
+    }
   );
 }
