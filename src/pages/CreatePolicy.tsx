@@ -14,6 +14,11 @@ export const CreatePolicy: React.FC = () => {
   );
   const [maxAmount, setMaxAmount] = useState<string>('100');
   const [windowCap, setWindowCap] = useState<string>('400');
+  const [allowedRecipients, setAllowedRecipients] = useState<string>(
+    '0x1111111111111111111111111111111111111111'
+  );
+  const [allowedAssets, setAllowedAssets] = useState<string>('USDC, GEN, NATIVE');
+
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -35,24 +40,70 @@ export const CreatePolicy: React.FC = () => {
       await switchToStudionet();
     }
 
-    if (policyText.length < 30 || policyText.length > 1200) {
-      setError('Policy text must be between 30 and 1200 characters.');
+    if (!/^0x[a-fA-F0-9]{40}$/.test(agentAddress.trim())) {
+      setError('agent must be a valid address');
       return;
     }
 
-    if (!agentAddress.startsWith('0x') || agentAddress.length !== 42) {
-      setError('Invalid agent address format (must be 0x followed by 40 hex chars).');
+    if (policyText.length < 30 || policyText.length > 1200) {
+      setError('policy text length must be between 30 and 1200 characters');
+      return;
+    }
+
+    if (!/^\d{1,18}$/.test(maxAmount.trim())) {
+      setError('max_amount must be a valid non-negative integer string');
+      return;
+    }
+
+    if (BigInt(maxAmount.trim()) < 1n) {
+      setError('max_amount must be >= 1');
+      return;
+    }
+
+    if (!/^\d{1,18}$/.test(windowCap.trim())) {
+      setError('window_cap must be a valid non-negative integer string');
+      return;
+    }
+
+    if (BigInt(windowCap.trim()) < BigInt(maxAmount.trim())) {
+      setError('window_cap must be >= max_amount');
+      return;
+    }
+
+    const recList = allowedRecipients.split(',').map((r) => r.trim()).filter(Boolean);
+    if (recList.length < 1 || recList.length > 10) {
+      setError('allowed_recipients must contain between 1 and 10 items');
+      return;
+    }
+    for (const r of recList) {
+      if (!/^0x[a-fA-F0-9]{40}$/.test(r)) {
+        setError('invalid address in allowed_recipients');
+        return;
+      }
+    }
+
+    const astList = allowedAssets.split(',').map((a) => a.trim()).filter(Boolean);
+    if (astList.length < 1 || astList.length > 10) {
+      setError('allowed_assets must contain between 1 and 10 items');
       return;
     }
 
     setSubmitting(true);
     try {
-      const result = await createPolicy(agentAddress, policyText, maxAmount, windowCap);
+      const result = await createPolicy(
+        agentAddress,
+        policyText,
+        maxAmount,
+        windowCap,
+        recList,
+        astList,
+        { onHash: (h) => setTxHash(h) }
+      );
       setTxHash(result.hash);
       setCreatedPolicyId(result.returnValue || 'Success');
     } catch (err: any) {
       console.error('Create policy error:', err);
-      setError(err?.message || 'Transaction submission failed');
+      setError(err?.friendlyMessage || err?.message || 'Transaction submission failed');
     } finally {
       setSubmitting(false);
     }
@@ -137,9 +188,6 @@ export const CreatePolicy: React.FC = () => {
                   color: 'var(--ink)',
                 }}
               />
-              <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
-                Permitted to call `request_action` under this policy.
-              </span>
             </div>
 
             <div style={{ marginBottom: '1.15rem' }}>
@@ -149,7 +197,7 @@ export const CreatePolicy: React.FC = () => {
               <textarea
                 id="policy-text"
                 required
-                rows={4}
+                rows={3}
                 value={policyText}
                 onChange={(e) => setPolicyText(e.target.value)}
                 style={{
@@ -162,15 +210,12 @@ export const CreatePolicy: React.FC = () => {
                   fontSize: '0.95rem',
                 }}
               />
-              <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
-                Minimum 30 characters.
-              </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.15rem' }}>
               <div>
                 <label htmlFor="max-amount" style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem' }}>
-                  Max Amount (Per-action cap)
+                  Max Amount (&gt;= 1)
                 </label>
                 <input
                   id="max-amount"
@@ -187,12 +232,11 @@ export const CreatePolicy: React.FC = () => {
                     color: 'var(--ink)',
                   }}
                 />
-                <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>"0" disables cap.</span>
               </div>
 
               <div>
                 <label htmlFor="window-cap" style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem' }}>
-                  Window Cap (Velocity)
+                  Window Cap (&gt;= Max)
                 </label>
                 <input
                   id="window-cap"
@@ -209,8 +253,49 @@ export const CreatePolicy: React.FC = () => {
                     color: 'var(--ink)',
                   }}
                 />
-                <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>"0" disables cap.</span>
               </div>
+            </div>
+
+            <div style={{ marginBottom: '1.15rem' }}>
+              <label htmlFor="allowed-recipients" style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem' }}>
+                Allowed Recipients (1-10 addresses, comma-separated)
+              </label>
+              <input
+                id="allowed-recipients"
+                type="text"
+                required
+                value={allowedRecipients}
+                onChange={(e) => setAllowedRecipients(e.target.value)}
+                className="font-mono"
+                style={{
+                  width: '100%',
+                  padding: '0.6rem',
+                  border: '1px solid var(--ink)',
+                  background: 'var(--surface)',
+                  color: 'var(--ink)',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label htmlFor="allowed-assets" style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem' }}>
+                Allowed Assets (1-10 symbols/addresses, comma-separated)
+              </label>
+              <input
+                id="allowed-assets"
+                type="text"
+                required
+                value={allowedAssets}
+                onChange={(e) => setAllowedAssets(e.target.value)}
+                className="font-mono"
+                style={{
+                  width: '100%',
+                  padding: '0.6rem',
+                  border: '1px solid var(--ink)',
+                  background: 'var(--surface)',
+                  color: 'var(--ink)',
+                }}
+              />
             </div>
 
             {error && (

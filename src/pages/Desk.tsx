@@ -11,10 +11,58 @@ import { SemaphoreSignal } from '../components/SemaphoreSignal';
 import { SectionHeading, ScrambleText, RealTxTimer } from '../hooks/useReveal';
 import { triggerDotFieldRipple } from '../lib/dotfield';
 import { useWallet } from '../context/WalletContext';
-import { resolveEscalation } from '../services/contractWrite';
+import { resolveEscalation, setPaused } from '../services/contractWrite';
+
+function renderSourceBadge(source: string) {
+  let shapeStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '2px 8px',
+    fontSize: '0.75rem',
+    fontWeight: 700,
+    letterSpacing: '0.04em',
+    border: '1px solid currentColor',
+  };
+  let symbol = '•';
+
+  switch (source) {
+    case 'HARD_LIMIT':
+      shapeStyle = { ...shapeStyle, borderRadius: '0px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--deny)' };
+      symbol = '■';
+      break;
+    case 'RECIPIENT_GUARD':
+      shapeStyle = { ...shapeStyle, borderRadius: '8px 0px 8px 0px', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--escalate)' };
+      symbol = '◆';
+      break;
+    case 'ASSET_GUARD':
+      shapeStyle = { ...shapeStyle, borderRadius: '0px 8px 0px 8px', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--escalate)' };
+      symbol = '▲';
+      break;
+    case 'VELOCITY':
+      shapeStyle = { ...shapeStyle, borderRadius: '9999px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--deny)' };
+      symbol = '⚡';
+      break;
+    case 'JUDGE':
+      shapeStyle = { ...shapeStyle, borderRadius: '4px', background: 'rgba(52, 211, 153, 0.1)', color: 'var(--allow)' };
+      symbol = '⚖';
+      break;
+    default:
+      shapeStyle = { ...shapeStyle, borderRadius: '4px', background: 'var(--surface)' };
+      symbol = '•';
+      break;
+  }
+
+  return (
+    <span style={shapeStyle} title={`Source: ${source}`}>
+      <span>{symbol}</span>
+      <span>{source}</span>
+    </span>
+  );
+}
 
 export const Desk: React.FC = () => {
-  const { address, isConnected, connectWallet } = useWallet();
+  const { address, isConnected } = useWallet();
   const [policyId, setPolicyId] = useState<string>('1');
   const [policy, setPolicy] = useState<PolicyRecord | null>(null);
   const [pending, setPending] = useState<DecisionRecord[]>([]);
@@ -22,6 +70,7 @@ export const Desk: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [togglingPause, setTogglingPause] = useState<boolean>(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const fetchDeskData = async (pid: string) => {
@@ -48,6 +97,30 @@ export const Desk: React.FC = () => {
     fetchDeskData(policyId);
   }, [policyId]);
 
+  const handleTogglePause = async () => {
+    if (!policy) return;
+    if (!isConnected || !address) {
+      setNotice('Please connect the policy owner wallet to toggle pause.');
+      return;
+    }
+    if (address.toLowerCase() !== policy.owner.toLowerCase()) {
+      setNotice('Unauthorized: Only policy owner can pause or unpause.');
+      return;
+    }
+    const nextPaused = !policy.paused;
+    setTogglingPause(true);
+    setNotice(`Submitting set_paused(${policyId}, ${nextPaused}) to Studionet...`);
+    try {
+      const res = await setPaused(policyId, nextPaused);
+      setNotice(`Policy #${policyId} is now ${nextPaused ? 'PAUSED' : 'ACTIVE'}! (Tx: ${res.hash})`);
+      await fetchDeskData(policyId);
+    } catch (err: any) {
+      setNotice(`Pause toggle failed: ${err?.message || err}`);
+    } finally {
+      setTogglingPause(false);
+    }
+  };
+
   const handleResolve = async (
     decisionId: string,
     outcome: 'ALLOW' | 'DENY',
@@ -65,7 +138,7 @@ export const Desk: React.FC = () => {
       return;
     }
     setResolvingId(decisionId);
-    setNotice(`Submitting resolve_escalation(#${decisionId}, ${outcome}) to Studionet validators...`);
+    setNotice(`Submitting resolve_escalation(#${decisionId}, ${outcome}) to Studionet...`);
     try {
       const result = await resolveEscalation(decisionId, outcome);
       setNotice(`Resolved decision #${decisionId} as ${outcome}! (Tx: ${result.hash})`);
@@ -96,7 +169,10 @@ export const Desk: React.FC = () => {
           </p>
           {policy && (
             <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
-              Policy #{policy.id} Owner: <ScrambleText value={policy.owner} />
+              Policy #{policy.id} Owner: <ScrambleText value={policy.owner} /> • Status:{' '}
+              <span style={{ color: policy.paused ? 'var(--deny)' : 'var(--allow)', fontWeight: 700 }}>
+                {policy.paused ? 'PAUSED' : 'ACTIVE'}
+              </span>
             </div>
           )}
         </div>
@@ -115,6 +191,25 @@ export const Desk: React.FC = () => {
               #{pid}
             </button>
           ))}
+          {policy && isConnected && (
+            <button
+              type="button"
+              disabled={togglingPause}
+              className={`btn btn-sm ${policy.paused ? 'btn-allow' : 'btn-deny'}`}
+              style={{ marginLeft: '0.5rem' }}
+              onClick={handleTogglePause}
+            >
+              {togglingPause ? (
+                <>
+                  Updating <RealTxTimer active={togglingPause} />
+                </>
+              ) : policy.paused ? (
+                'Unpause Policy'
+              ) : (
+                'Pause Policy'
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -125,105 +220,93 @@ export const Desk: React.FC = () => {
             background: 'var(--bg)',
             borderColor: 'var(--ink)',
             padding: '0.75rem 1rem',
+            marginBottom: '1.25rem',
           }}
         >
-          <strong>Notice:</strong> {notice} <RealTxTimer active={Boolean(resolvingId)} />
+          <strong>Notice:</strong> {notice} <RealTxTimer active={Boolean(resolvingId || togglingPause)} />
         </div>
       )}
 
       {error && (
-        <div className="panel" style={{ borderColor: 'var(--deny)' }}>
+        <div className="panel" style={{ borderColor: 'var(--deny)', marginBottom: '1.25rem' }}>
           <p style={{ color: 'var(--deny)', fontWeight: 600 }}>{error}</p>
         </div>
       )}
 
       {loading ? (
         <div className="panel">
-          <p>Querying escalation queues on Studionet...</p>
+          <p>Loading escalations for Policy #{policyId}...</p>
         </div>
       ) : (
         <>
-          {/* Pending Review Queue */}
+          {/* Pending Escalations Section */}
           <div className="panel" style={{ marginBottom: '2rem' }}>
             <div className="panel-header">
-              <h2 style={{ fontSize: '1.15rem' }}>Pending Owner Review ({pending.length})</h2>
-              <span className="badge badge-status-pending">Awaiting Action</span>
+              <h3>Pending Owner Escalations ({pending.length})</h3>
+              <span className="badge badge-source">Owner Action Required</span>
             </div>
 
             {pending.length === 0 ? (
               <p style={{ color: 'var(--ink-muted)' }}>
-                Zero escalations currently pending review under Policy #{policyId}.
+                No actions currently pending owner triage for Policy #{policyId}.
               </p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {pending.map((item) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {pending.map((d) => (
                   <div
-                    key={item.id}
+                    key={d.id}
                     style={{
-                      border: '2px solid var(--bg-deep)',
-                      padding: '1.25rem',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--surface)',
+                      padding: '1rem',
+                      background: 'var(--bg)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
                     }}
                   >
                     <div
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'flex-start',
+                        alignItems: 'center',
+                        marginBottom: '0.5rem',
                         flexWrap: 'wrap',
                         gap: '0.5rem',
                       }}
                     >
-                      <div>
-                        <div style={{ fontSize: '1.05rem', fontWeight: 700 }}>
-                          Decision #{item.id} • <span className="font-mono">{item.category}</span>
-                        </div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.2rem' }}>
-                          Amount: <span className="font-mono" style={{ fontWeight: 700 }}>{item.amount}</span> • Source: <span className="badge badge-source">{item.source}</span>
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Link
+                          to={`/app/decision/${d.id}`}
+                          className="font-mono text-link"
+                          style={{ fontWeight: 700 }}
+                        >
+                          Decision #{d.id}
+                        </Link>
+                        {renderSourceBadge(d.source)}
                       </div>
-                      <SemaphoreSignal verdict={item.verdict} size="md" />
-                    </div>
-
-                    <div
-                      style={{
-                        margin: '1rem 0',
-                        padding: '0.75rem',
-                        background: 'var(--bg)',
-                        borderLeft: '3px solid var(--escalate)',
-                      }}
-                    >
-                      <strong>Proposed Action:</strong>
-                      <p style={{ marginTop: '0.25rem', fontSize: '0.95rem' }}>"{item.description}"</p>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                      {isConnected ? (
-                        <>
-                          <button
-                            disabled={resolvingId === item.id}
-                            className="btn btn-sm btn-allow"
-                            onClick={(e) => handleResolve(item.id, 'ALLOW', e.currentTarget)}
-                          >
-                            Resolve: ALLOW
-                          </button>
-                          <button
-                            disabled={resolvingId === item.id}
-                            className="btn btn-sm btn-deny"
-                            onClick={(e) => handleResolve(item.id, 'DENY', e.currentTarget)}
-                          >
-                            Resolve: DENY
-                          </button>
-                        </>
-                      ) : (
-                        <button className="btn btn-sm btn-primary" onClick={connectWallet}>
-                          Connect Owner Wallet to Resolve
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          type="button"
+                          disabled={Boolean(resolvingId)}
+                          className="btn btn-sm btn-allow"
+                          onClick={(e) => handleResolve(d.id, 'ALLOW', e.currentTarget)}
+                        >
+                          {resolvingId === d.id ? 'Resolving...' : 'Resolve ALLOW'}
                         </button>
-                      )}
-                      <Link to={`/app/decision/${item.id}`} className="btn btn-sm btn-secondary">
-                        Audit Details
-                      </Link>
+                        <button
+                          type="button"
+                          disabled={Boolean(resolvingId)}
+                          className="btn btn-sm btn-deny"
+                          onClick={(e) => handleResolve(d.id, 'DENY', e.currentTarget)}
+                        >
+                          {resolvingId === d.id ? 'Resolving...' : 'Resolve DENY'}
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                      "{d.justification || '(no justification)'}"
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
+                      Category: <strong>{d.category}</strong> • Amount: <strong>{d.amount} {d.asset}</strong> • Recipient:{' '}
+                      <span className="font-mono">{d.recipient}</span>
                     </div>
                   </div>
                 ))}
@@ -231,58 +314,50 @@ export const Desk: React.FC = () => {
             )}
           </div>
 
-          {/* Historical Review Stream */}
-          <div className="panel" style={{ padding: 0 }}>
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--bg-deep)' }}>
-              <h3>Recent Evaluation Stream (Policy #{policyId})</h3>
+          {/* Recent Decisions Audit */}
+          <div className="panel">
+            <div className="panel-header">
+              <h3>Recent Policy Decisions</h3>
+              <span className="badge badge-source">Policy #{policyId}</span>
             </div>
+
             {recent.length === 0 ? (
-              <div style={{ padding: '1.5rem', color: 'var(--ink-muted)' }}>
-                No evaluation history found for Policy #{policyId}.
-              </div>
+              <p style={{ color: 'var(--ink-muted)' }}>No recorded decisions yet.</p>
             ) : (
-              <div className="table-responsive">
-                <table className="data-table">
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                   <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Category</th>
-                      <th>Amount</th>
-                      <th>Source</th>
-                      <th>Verdict</th>
-                      <th>Status</th>
-                      <th>Action</th>
+                    <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem' }}>ID</th>
+                      <th style={{ padding: '0.5rem' }}>Verdict</th>
+                      <th style={{ padding: '0.5rem' }}>Source (Shaped)</th>
+                      <th style={{ padding: '0.5rem' }}>Amount</th>
+                      <th style={{ padding: '0.5rem' }}>Recipient</th>
+                      <th style={{ padding: '0.5rem' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recent.map((d) => (
-                      <tr key={d.id}>
-                        <td className="font-mono">#{d.id}</td>
-                        <td className="font-mono">{d.category}</td>
-                        <td className="font-mono">{d.amount}</td>
-                        <td>
-                          <span className="badge badge-source">{d.source}</span>
+                      <tr key={d.id} style={{ borderBottom: '1px solid var(--bg)' }}>
+                        <td style={{ padding: '0.5rem' }}>
+                          <Link to={`/app/decision/${d.id}`} className="font-mono text-link">
+                            #{d.id}
+                          </Link>
                         </td>
-                        <td>
-                          <SemaphoreSignal verdict={d.verdict} size="sm" />
+                        <td style={{ padding: '0.5rem' }}>
+                          <SemaphoreSignal verdict={d.verdict} size="sm" showLabel={true} />
                         </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              d.status === 'CLEARED'
-                                ? 'badge-status-cleared'
-                                : d.status === 'DENIED'
-                                ? 'badge-status-denied'
-                                : 'badge-status-pending'
-                            }`}
-                          >
+                        <td style={{ padding: '0.5rem' }}>{renderSourceBadge(d.source)}</td>
+                        <td style={{ padding: '0.5rem' }} className="font-mono">
+                          {d.amount} {d.asset}
+                        </td>
+                        <td style={{ padding: '0.5rem' }} className="font-mono">
+                          {d.recipient ? `${d.recipient.slice(0, 6)}...${d.recipient.slice(-4)}` : '-'}
+                        </td>
+                        <td style={{ padding: '0.5rem' }}>
+                          <span className={`badge ${d.status === 'CLEARED' ? 'badge-status-cleared' : d.status === 'DENIED' ? 'badge-status-denied' : 'badge-status-pending'}`}>
                             {d.status}
                           </span>
-                        </td>
-                        <td>
-                          <Link to={`/app/decision/${d.id}`} className="btn btn-sm btn-secondary">
-                            View
-                          </Link>
                         </td>
                       </tr>
                     ))}

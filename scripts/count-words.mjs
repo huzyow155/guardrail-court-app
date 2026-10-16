@@ -92,6 +92,7 @@ export function auditWordCounts() {
     { name: 'CreatePolicy (/app/new)', file: 'src/pages/CreatePolicy.tsx' },
     { name: 'RequestAction (/app/request)', file: 'src/pages/RequestAction.tsx' },
     { name: 'DecisionDetail (/app/decision/:id)', file: 'src/pages/DecisionDetail.tsx' },
+    { name: 'VaultConsumer (/app/vault)', file: 'src/pages/VaultConsumer.tsx' },
     { name: 'Evidence (/app/evidence)', file: 'src/pages/Evidence.tsx' },
   ];
 

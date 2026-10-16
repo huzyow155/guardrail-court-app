@@ -9,6 +9,8 @@ import { DecisionDetail } from './pages/DecisionDetail';
 import { CreatePolicy } from './pages/CreatePolicy';
 import { Desk } from './pages/Desk';
 import { RequestAction } from './pages/RequestAction';
+import { VaultConsumer } from './pages/VaultConsumer';
+import { COURT_ADDRESS } from './services/contractClient';
 import { triggerDotFieldRipple } from './lib/dotfield';
 
 const NavigationBar: React.FC = () => {
@@ -109,6 +111,13 @@ const NavigationBar: React.FC = () => {
               style={{ '--d': '.26s' } as React.CSSProperties}
             >
               Desk
+            </Link>
+            <Link
+              to="/app/vault"
+              className={`appear appear--scale ${pathname === '/app/vault' ? 'active' : ''}`}
+              style={{ '--d': '.28s' } as React.CSSProperties}
+            >
+              Vault
             </Link>
             <Link
               to="/app/evidence"
@@ -223,6 +232,14 @@ export const App: React.FC = () => {
                 }
               />
               <Route
+                path="/app/vault"
+                element={
+                  <div className="app-content-wrap">
+                    <VaultConsumer />
+                  </div>
+                }
+              />
+              <Route
                 path="/app/evidence"
                 element={
                   <div className="app-content-wrap">
@@ -276,13 +293,13 @@ export const App: React.FC = () => {
               </div>
               <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                 <a
-                  href="https://explorer-studio.genlayer.com/address/0x6C553Ba27a768D71b570a106D9D2e13553b4103c"
+                  href={`https://explorer-studio.genlayer.com/address/${COURT_ADDRESS}`}
                   target="_blank"
                   rel="noreferrer"
                   className="font-mono"
                   style={{ color: 'var(--muted)' }}
                 >
-                  0x6C55...103c
+                  {COURT_ADDRESS.slice(0, 6)}...{COURT_ADDRESS.slice(-4)}
                 </a>
                 <a
                   href="https://github.com/huzyow155/guardrail-court-genlayer"

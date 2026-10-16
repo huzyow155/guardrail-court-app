@@ -5,7 +5,7 @@ import { triggerDotFieldRipple } from '../lib/dotfield';
 export const Landing: React.FC = () => {
   return (
     <div className="landing-wrap">
-      {/* 1. Hero Section (<= 20 words) */}
+      {/* 1. Hero Section */}
       <section className="hero-section">
         <div className="hero-copy">
           <div
@@ -33,7 +33,7 @@ export const Landing: React.FC = () => {
           </h1>
 
           <p className="lede appear appear--soft" style={{ '--d': '.48s' } as React.CSSProperties}>
-            Multi-validator clearance protocol for autonomous AI agents.
+            Action-bound consensus clearance protocol for autonomous AI agents.
           </p>
 
           <div
@@ -67,19 +67,19 @@ export const Landing: React.FC = () => {
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
-            <span className="font-mono">19.02s mean latency</span>
+            <span className="font-mono">8.87s guard latency</span>
           </div>
           <div className="stat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
-            <span>3 defensive layers</span>
+            <span>Action-bound V2</span>
           </div>
           <div className="stat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span className="font-mono">29 on-chain receipts</span>
+            <span className="font-mono">51 verified tests</span>
           </div>
         </div>
       </section>
@@ -88,8 +88,8 @@ export const Landing: React.FC = () => {
       <section className="landing-section" id="layers">
         <div className="app-container">
           <div className="section-head">
-            <h2>Three Protection Layers</h2>
-            <p>Deterministic bounds reject spikes before validators arbitrate qualitative intent.</p>
+            <h2>Five Protection Layers</h2>
+            <p>Deterministic allowlists and velocity reject bad requests before validator arbitration.</p>
           </div>
 
           <div className="layers-grid">
@@ -97,24 +97,24 @@ export const Landing: React.FC = () => {
               <span className="layer-card-tag" style={{ color: 'var(--deny)', background: 'rgba(248,113,113,0.1)' }}>
                 STAGE 01
               </span>
-              <h3>Hard Limit</h3>
-              <p>Instant denial when proposed spend exceeds cap.</p>
+              <h3>Allowlists</h3>
+              <p>Rejects unauthorized recipient addresses and asset symbols.</p>
             </div>
 
             <div className="layer-card">
               <span className="layer-card-tag" style={{ color: 'var(--escalate)', background: 'rgba(251,191,36,0.1)' }}>
                 STAGE 02
               </span>
-              <h3>Velocity</h3>
-              <p>Escalates to the owner when spend reaches the window cap.</p>
+              <h3>Hard Limit</h3>
+              <p>Rejects requests exceeding the per-action max cap.</p>
             </div>
 
             <div className="layer-card">
               <span className="layer-card-tag" style={{ color: 'var(--allow)', background: 'rgba(52,211,153,0.1)' }}>
                 STAGE 03
               </span>
-              <h3>Judge</h3>
-              <p>Multi-validator consensus on qualitative natural policy rules.</p>
+              <h3>Judge Consensus</h3>
+              <p>Multi-validator LLM consensus on natural language policy intent.</p>
             </div>
           </div>
         </div>
@@ -136,7 +136,7 @@ export const Landing: React.FC = () => {
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
-                <span>Single model equivalence without multi-model arbitration.</span>
+                <span>Clearance has no expiry; blocked only when policy is paused.</span>
               </li>
               <li className="limitations-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -144,7 +144,7 @@ export const Landing: React.FC = () => {
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
-                <span>Ring buffer tracks recent 15 decisions.</span>
+                <span>Velocity counts across recent 30 decisions, not by clock time.</span>
               </li>
               <li className="limitations-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -152,13 +152,13 @@ export const Landing: React.FC = () => {
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
-                <span>Equivalence verification takes 19 seconds average.</span>
+                <span>Calldata hash is supplied by requester without on-chain execution inspection.</span>
               </li>
             </ul>
 
             <div style={{ textAlign: 'center' }}>
               <a
-                href="https://github.com/huzyow155/guardrail-court-genlayer/blob/main/docs/LIMITATIONS.md"
+                href="https://github.com/huzyow155/guardrail-court-genlayer/blob/main/docs/LIMITATIONS_V2.md"
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-ghost btn-sm"
